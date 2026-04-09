@@ -9,6 +9,7 @@
      data-flow-saved-message="<%= l(:notice_successful_update) %>"
      data-flow-error-message="<%= l(:text_flow_network_error) %>"
      data-flow-failure-message="<%= l(:text_flow_save_failed) %>"
+     data-flow-unassigned-label="<%= l(:label_flow_unassigned) %>"
      data-flow-storage-key="planning:<%= @project&.identifier || 'global' %>">
   <div class="flow-page-header">
     <div>
@@ -126,12 +127,14 @@
 
           <label class="flow-check"><input type="checkbox" data-flow-filter-overdue="true"> <%= l(:label_flow_overdue) %></label>
           <label class="flow-check"><input type="checkbox" data-flow-filter-unassigned="true"> <%= l(:label_flow_unassigned) %></label>
+          <label class="flow-check"><input type="checkbox" data-flow-filter-closed="true"> <%= l(:label_flow_closed) %></label>
           <label class="flow-check"><input type="checkbox" data-flow-toggle-relations="true"> <%= l(:label_flow_show_dependencies) %></label>
           <button type="button" class="button-small" data-flow-reset-filters="true"><%= l(:button_clear) %></button>
         </div>
 
         <button type="button" class="button-small" data-flow-zoom-out="true"><%= l(:button_flow_zoom_out) %></button>
         <button type="button" class="button-small" data-flow-zoom-in="true"><%= l(:button_flow_zoom_in) %></button>
+        <button type="button" class="button-small" data-flow-autoscale="true"><%= l(:button_flow_autofit) %></button>
         <button type="button" class="button-small" data-flow-scroll-today="true"><%= l(:label_flow_today) %></button>
         <button type="button" class="button-small" data-flow-planning-undo="true" disabled><%= l(:button_flow_undo) %></button>
       </div>
@@ -286,6 +289,13 @@
                       <%= link_to "##{issue.id} #{issue.subject}", issue_path(issue), title: issue.subject %>
                     </div>
                   </div>
+                  <div class="planning-meta" style="--tree-depth: <%= depth %>;">
+                    <span class="planning-mini-badge"><%= issue.tracker&.name %></span>
+                    <span class="planning-mini-badge is-muted"><%= issue.status&.name %></span>
+                    <% if issue.fixed_version %>
+                      <span class="planning-mini-badge is-soft"><%= issue.fixed_version.name %></span>
+                    <% end %>
+                  </div>
                 </div>
                 <div class="planning-grid-cell planning-grid-cell--assignee"><%= issue.assigned_to&.name || l(:label_flow_unassigned) %></div>
                 <div class="planning-grid-cell planning-grid-cell--dates js-gantt-dates"><%= flow_schedule_label(issue) %></div>
@@ -336,6 +346,13 @@
         <% end %>
       </div>
       <svg class="planning-relations-layer" data-planning-relations-layer="true" aria-hidden="true"></svg>
+    </div>
+
+    <div class="flow-legend">
+      <span class="flow-legend-item"><span class="flow-legend-swatch is-bar"></span><%= l(:label_flow_issue_bar) %></span>
+      <span class="flow-legend-item"><span class="flow-legend-swatch is-today"></span><%= l(:label_flow_today) %></span>
+      <span class="flow-legend-item"><span class="flow-legend-swatch is-marker"></span><%= l(:label_flow_version_marker) %></span>
+      <span class="flow-legend-item"><span class="flow-legend-swatch is-dependency"></span><%= l(:label_flow_dependency_line) %></span>
     </div>
   <% else %>
     <p class="nodata"><%= l(:text_planning_gantt_empty) %></p>

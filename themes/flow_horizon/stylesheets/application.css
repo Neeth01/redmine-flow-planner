@@ -20,6 +20,7 @@ body {
   --fh-surface: #f4f7fb;
   --fh-panel: #ffffff;
   --fh-panel-soft: #f8fbff;
+  --fh-panel-tint: rgba(255, 255, 255, 0.86);
   --fh-muted: #667085;
   --fh-strong: #1f2937;
   --fh-accent: #0f5f9c;
@@ -33,9 +34,11 @@ body {
   --fh-error-border: #f1c3c0;
   --fh-shadow: 0 16px 34px rgba(15, 23, 42, 0.08);
   --fh-shadow-soft: 0 8px 18px rgba(15, 23, 42, 0.05);
+  --fh-shadow-strong: 0 22px 42px rgba(15, 23, 42, 0.09);
   background:
-    radial-gradient(circle at top right, rgba(15, 95, 156, 0.08), transparent 30%),
-    linear-gradient(180deg, #f8fbff 0%, #f2f5fa 100%);
+    radial-gradient(circle at top right, rgba(15, 95, 156, 0.09), transparent 28%),
+    radial-gradient(circle at top left, rgba(148, 163, 184, 0.08), transparent 24%),
+    linear-gradient(180deg, #f9fbff 0%, #f2f5fa 100%);
   color: var(--fh-strong);
   font-family: "Segoe UI Variable Text", Aptos, "IBM Plex Sans", "Noto Sans", "Segoe UI", sans-serif;
 }
@@ -67,6 +70,7 @@ h4 {
 #top-menu {
   padding: 4px 12px;
   background: linear-gradient(90deg, #0f172a 0%, #16324d 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 6px 16px rgba(15, 23, 42, 0.14);
 }
 
@@ -110,8 +114,9 @@ h4 {
   border-radius: 20px 20px 0 0;
   background:
     radial-gradient(circle at top right, rgba(15, 95, 156, 0.08), transparent 34%),
-    linear-gradient(180deg, #ffffff 0%, var(--fh-panel-soft) 100%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, var(--fh-panel-soft) 100%);
   box-shadow: var(--fh-shadow-soft);
+  backdrop-filter: blur(10px);
   color: var(--fh-strong);
   font-size: 1.35rem;
   font-weight: 700;
@@ -129,13 +134,15 @@ h4 {
   border: 1px solid var(--fh-border);
   border-top: 0;
   border-radius: 0 0 20px 20px;
-  background: linear-gradient(180deg, #ffffff 0%, var(--fh-panel-soft) 100%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, var(--fh-panel-soft) 100%);
   box-shadow: var(--fh-shadow-soft);
+  backdrop-filter: blur(10px);
 }
 
 #main-menu > ul {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
   margin: 0;
   padding: 4px 0 0;
@@ -168,7 +175,7 @@ h4 {
   background: #ffffff;
   color: var(--fh-accent);
   text-decoration: none;
-  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
+  box-shadow: 0 10px 18px rgba(15, 23, 42, 0.05);
 }
 
 #main-menu {
@@ -267,8 +274,8 @@ div.issue,
   padding: 24px 28px 28px;
   border: 1px solid var(--fh-border);
   border-radius: 26px;
-  background: var(--fh-panel);
-  box-shadow: var(--fh-shadow);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, #fbfdff 100%);
+  box-shadow: var(--fh-shadow-strong);
   overflow-wrap: anywhere;
 }
 
@@ -302,7 +309,7 @@ body.controller-planning_gantts #sidebar {
   padding: 18px 18px 20px;
   border: 1px solid var(--fh-border);
   border-radius: 24px;
-  background: var(--fh-panel);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, #fbfdff 100%);
   box-shadow: var(--fh-shadow-soft);
 }
 
@@ -372,7 +379,7 @@ div.issue,
 .version-overview {
   border: 1px solid var(--fh-border);
   border-radius: 18px;
-  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, #fbfdff 100%);
   box-shadow: var(--fh-shadow-soft);
 }
 
@@ -423,6 +430,7 @@ textarea {
   background: #ffffff;
   color: var(--fh-strong);
   box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.03);
+  transition: border-color 0.14s ease, box-shadow 0.14s ease, background 0.14s ease;
 }
 
 input[type="text"],
@@ -485,6 +493,7 @@ a.button,
   background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
   color: var(--fh-strong);
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+  transition: border-color 0.14s ease, background 0.14s ease, color 0.14s ease, box-shadow 0.14s ease;
 }
 
 input[type="submit"]:hover,
@@ -705,6 +714,30 @@ blockquote {
 
 .autoscroll {
   overflow: auto;
+  scrollbar-color: #c4cfdd transparent;
+}
+
+.contextual a,
+.contextual .icon,
+#content .contextual a.icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid #d6e0ed;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+  text-decoration: none;
+}
+
+.contextual a:hover,
+.contextual .icon:hover,
+#content .contextual a.icon:hover {
+  border-color: #b6c8df;
+  background: var(--fh-accent-soft);
+  color: var(--fh-accent);
 }
 
 #query_form,

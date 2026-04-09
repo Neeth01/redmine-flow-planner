@@ -20,6 +20,11 @@ fr:
   label_flow_closed: Fermes
   label_flow_all_trackers: Tous les trackers
   label_flow_all_assignees: Tous les assignes
+  label_flow_group_none: Sans regroupement
+  label_flow_group_assignee: Regrouper par assigne
+  label_flow_group_tracker: Regrouper par tracker
+  label_flow_group_priority: Regrouper par priorite
+  label_flow_group_version: Regrouper par version
   label_flow_hide_empty_columns: Masquer les colonnes vides
   label_flow_columns: Colonnes
   label_flow_scheduled: Planifies

@@ -61,11 +61,26 @@
     <% if issue.priority %>
       <span class="flow-mini-badge"><%= issue.priority.name %></span>
     <% end %>
+    <% if issue.fixed_version %>
+      <span class="flow-mini-badge is-soft"><%= issue.fixed_version.name %></span>
+    <% end %>
   </div>
 
   <div class="flow-card-summary">
     <span class="js-agile-assignee"><%= issue.assigned_to&.name || l(:label_flow_unassigned) %></span>
     <strong class="js-agile-done" data-agile-inline-done="true" title="<%= l(:text_flow_inline_edit_progress) %>"><%= issue.done_ratio %>%</strong>
+  </div>
+
+  <div class="flow-card-progress">
+    <span class="flow-card-progress-track">
+      <span class="flow-card-progress-fill" style="width: <%= issue.done_ratio.to_i.clamp(0, 100) %>%"></span>
+    </span>
+    <span class="flow-card-progress-value"><%= issue.done_ratio %>%</span>
+  </div>
+
+  <div class="flow-card-hours">
+    <span><%= l(:field_estimated_hours) %> <strong class="js-agile-estimated"><%= flow_hours_label(issue.respond_to?(:estimated_hours) ? issue.estimated_hours : 0) %></strong></span>
+    <span><%= l(:label_spent_time) %> <strong class="js-agile-spent"><%= flow_hours_label(issue.respond_to?(:spent_hours) ? issue.spent_hours : 0) %></strong></span>
   </div>
 
   <% if assignee_editable || done_ratio_editable %>

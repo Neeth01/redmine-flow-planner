@@ -71,6 +71,20 @@ module FlowPlannerHelper
     format_date(issue.due_date)
   end
 
+  def flow_hours_label(value)
+    amount = value.to_f
+    return '0h' if amount <= 0.0
+
+    rounded =
+      if (amount % 1.0).zero?
+        amount.to_i.to_s
+      else
+        format('%.1f', amount).sub(/\.0\z/, '')
+      end
+
+    "#{rounded}h"
+  end
+
   def flow_metrics_for(issues, due_soon_days)
     list = Array(issues)
     {

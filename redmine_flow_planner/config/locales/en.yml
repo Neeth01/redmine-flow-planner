@@ -20,6 +20,11 @@ en:
   label_flow_closed: Closed
   label_flow_all_trackers: All trackers
   label_flow_all_assignees: All assignees
+  label_flow_group_none: No grouping
+  label_flow_group_assignee: Group by assignee
+  label_flow_group_tracker: Group by tracker
+  label_flow_group_priority: Group by priority
+  label_flow_group_version: Group by version
   label_flow_hide_empty_columns: Hide empty columns
   label_flow_columns: Columns
   label_flow_scheduled: Scheduled

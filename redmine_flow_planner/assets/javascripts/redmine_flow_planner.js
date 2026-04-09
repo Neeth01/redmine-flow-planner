@@ -50,6 +50,20 @@
     return humanDate(startDate) + " -> " + humanDate(dueDate);
   }
 
+  function humanHours(value) {
+    var amount = Number(value || 0);
+
+    if (!amount || amount < 0) {
+      return "0h";
+    }
+
+    if (Math.round(amount) === amount) {
+      return String(amount) + "h";
+    }
+
+    return String(Math.round(amount * 10) / 10) + "h";
+  }
+
   function normalizeText(value) {
     return String(value || "").toLowerCase().trim();
   }
@@ -260,6 +274,7 @@
       search: normalizeText(shell.querySelector("[data-flow-filter-search='true']") && shell.querySelector("[data-flow-filter-search='true']").value),
       trackerId: String(shell.querySelector("[data-flow-filter-tracker='true']") && shell.querySelector("[data-flow-filter-tracker='true']").value || ""),
       assigneeId: String(shell.querySelector("[data-flow-filter-assignee='true']") && shell.querySelector("[data-flow-filter-assignee='true']").value || ""),
+      groupBy: String(shell.querySelector("[data-flow-board-grouping='true']") && shell.querySelector("[data-flow-board-grouping='true']").value || ""),
       overdueOnly: !!(shell.querySelector("[data-flow-filter-overdue='true']") && shell.querySelector("[data-flow-filter-overdue='true']").checked),
       unassignedOnly: !!(shell.querySelector("[data-flow-filter-unassigned='true']") && shell.querySelector("[data-flow-filter-unassigned='true']").checked),
       closedOnly: !!(shell.querySelector("[data-flow-filter-closed='true']") && shell.querySelector("[data-flow-filter-closed='true']").checked),
@@ -281,6 +296,7 @@
     var search = shell.querySelector("[data-flow-filter-search='true']");
     var tracker = shell.querySelector("[data-flow-filter-tracker='true']");
     var assignee = shell.querySelector("[data-flow-filter-assignee='true']");
+    var grouping = shell.querySelector("[data-flow-board-grouping='true']");
     var overdue = shell.querySelector("[data-flow-filter-overdue='true']");
     var unassigned = shell.querySelector("[data-flow-filter-unassigned='true']");
     var closed = shell.querySelector("[data-flow-filter-closed='true']");
@@ -294,6 +310,9 @@
     }
     if (assignee) {
       assignee.value = state.assigneeId || "";
+    }
+    if (grouping) {
+      grouping.value = state.groupBy || "";
     }
     if (overdue) {
       overdue.checked = !!state.overdueOnly;
@@ -370,6 +389,96 @@
     });
   }
 
+  function boardGroupingValue(card, state, shell) {
+    var noneLabel = (shell && shell.dataset.flowBoardEmptyGroup) || "None";
+
+    if (state.groupBy === "assignee") {
+      return card.dataset.assigneeName || noneLabel;
+    }
+    if (state.groupBy === "tracker") {
+      return card.dataset.trackerName || noneLabel;
+    }
+    if (state.groupBy === "priority") {
+      return card.dataset.priorityName || noneLabel;
+    }
+    if (state.groupBy === "version") {
+      return card.dataset.versionName || noneLabel;
+    }
+
+    return "";
+  }
+
+  function renderBoardGrouping(board, state) {
+    board.querySelectorAll("[data-agile-list='true']").forEach(function(list) {
+      var cards = Array.prototype.slice.call(list.querySelectorAll("[data-agile-card='true']"));
+      var visibleCards;
+      var hiddenCards;
+      var groups;
+      var labels;
+      var fragment;
+
+      cards.forEach(function(card) {
+        list.appendChild(card);
+      });
+
+      Array.prototype.slice.call(list.querySelectorAll("[data-flow-card-group='true']")).forEach(function(group) {
+        group.remove();
+      });
+
+      if (!state.groupBy) {
+        return;
+      }
+
+      visibleCards = cards.filter(function(card) {
+        return !card.classList.contains("is-filtered-out");
+      });
+      hiddenCards = cards.filter(function(card) {
+        return card.classList.contains("is-filtered-out");
+      });
+      groups = {};
+      labels = [];
+      fragment = document.createDocumentFragment();
+
+      visibleCards.forEach(function(card) {
+        var label = boardGroupingValue(card, state, board.closest(".flow-shell"));
+        if (!groups[label]) {
+          groups[label] = [];
+          labels.push(label);
+        }
+        groups[label].push(card);
+      });
+
+      labels.sort(function(left, right) {
+        return left.localeCompare(right);
+      }).forEach(function(label) {
+        var section = document.createElement("section");
+        var title = document.createElement("div");
+        var count = document.createElement("span");
+
+        section.className = "flow-card-group";
+        section.setAttribute("data-flow-card-group", "true");
+        title.className = "flow-card-group-title";
+        title.innerHTML = "<span>" + escapeHTML(label) + "</span>";
+        count.className = "flow-card-group-count";
+        count.textContent = String(groups[label].length);
+        title.appendChild(count);
+        section.appendChild(title);
+
+        groups[label].forEach(function(card) {
+          section.appendChild(card);
+        });
+
+        fragment.appendChild(section);
+      });
+
+      hiddenCards.forEach(function(card) {
+        fragment.appendChild(card);
+      });
+
+      list.appendChild(fragment);
+    });
+  }
+
   function applyBoardFilters(board) {
     var shell = board.closest(".flow-shell");
     var state = boardFilterState(shell);
@@ -378,6 +487,7 @@
       card.classList.toggle("is-filtered-out", !matchesBoardFilters(card, state));
     });
 
+    renderBoardGrouping(board, state);
     updateBoardColumns(board, state);
   }
 
@@ -397,22 +507,29 @@
       return;
     }
 
+    var shell = card.closest(".flow-shell");
     var statusNode = card.querySelector(".js-agile-status");
     var assigneeNode = card.querySelector(".js-agile-assignee");
     var doneNode = card.querySelector(".js-agile-done");
     var dueNode = card.querySelector(".js-agile-due");
+    var progressFill = card.querySelector(".flow-card-progress-fill");
+    var estimatedNode = card.querySelector(".js-agile-estimated");
+    var spentNode = card.querySelector(".js-agile-spent");
 
     if (statusNode && issue.status_name) {
       statusNode.textContent = issue.status_name;
     }
 
-    if (assigneeNode) {
-      assigneeNode.textContent = issue.assigned_to_name || assigneeNode.textContent;
+    if (assigneeNode && issue.assigned_to_name !== undefined) {
+      assigneeNode.textContent = issue.assigned_to_name || (shell && shell.dataset.flowUnassignedLabel) || "";
     }
 
     if (doneNode && issue.done_ratio !== undefined) {
       doneNode.textContent = String(issue.done_ratio) + "%";
       card.dataset.doneRatio = String(issue.done_ratio);
+    }
+    if (progressFill && issue.done_ratio !== undefined) {
+      progressFill.style.width = String(Math.max(0, Math.min(100, Number(issue.done_ratio || 0)))) + "%";
     }
 
     if (dueNode && issue.due_label !== undefined) {
@@ -471,10 +588,16 @@
 
     if (issue.estimated_hours !== undefined) {
       card.dataset.estimatedHours = String(issue.estimated_hours || 0);
+      if (estimatedNode) {
+        estimatedNode.textContent = humanHours(issue.estimated_hours || 0);
+      }
     }
 
     if (issue.spent_hours !== undefined) {
       card.dataset.spentHours = String(issue.spent_hours || 0);
+      if (spentNode) {
+        spentNode.textContent = humanHours(issue.spent_hours || 0);
+      }
     }
 
     card.dataset.searchText = normalizeText(card.textContent);
@@ -902,6 +1025,7 @@
       return;
     }
 
+    var shell = bar.closest(".flow-shell");
     var row = bar.closest("[data-planning-row='true']");
     var datesNode = row && row.querySelector(".js-gantt-dates");
     var assigneeNode = row && row.querySelector(".planning-grid-cell--assignee");
@@ -934,7 +1058,7 @@
     if (issue.assigned_to_name !== undefined) {
       bar.dataset.toneAssignee = issue.assigned_to_name || "";
       if (assigneeNode) {
-        assigneeNode.textContent = issue.assigned_to_name || "";
+        assigneeNode.textContent = issue.assigned_to_name || (shell && shell.dataset.flowUnassignedLabel) || "";
       }
     }
 
@@ -1403,57 +1527,13 @@
         }
       }
 
-      // Restore day width and compact preference if present (do not auto-submit forms)
+      // Restore day width preference if present without reloading the page.
       (function restoreDayWidthPref() {
         var prefs = readStoredState(planningPrefsKey) || {};
         if (prefs.dayWidth) {
           applyDayWidth(Number(prefs.dayWidth));
         }
-        if (prefs.compact) {
-          shell.classList.add('flow-compact');
-        }
-
-        if (prefs.critical) {
-          shell.classList.add('show-critical');
-        }
-
-        // If there's a compact toggle input in the toolbar, reflect the stored state
-        var compactToggle = shell.querySelector("[data-flow-compact-toggle='true']");
-        if (compactToggle) {
-          try {
-            compactToggle.checked = !!prefs.compact;
-          } catch (e) {
-            // ignore
-          }
-        }
-        var criticalToggle = shell.querySelector("[data-flow-toggle-critical='true']");
-        if (criticalToggle) {
-          try { criticalToggle.checked = !!prefs.critical; } catch (e) {}
-        }
       })();
-
-      // Bind toolbar controls: show critical toggle and simulate button
-      var criticalToggle = shell.querySelector("[data-flow-toggle-critical='true']");
-      if (criticalToggle) {
-        criticalToggle.addEventListener('change', function() {
-          var checked = !!criticalToggle.checked;
-          shell.classList.toggle('show-critical', checked);
-          try {
-            var _prefs3 = readStoredState(planningPrefsKey) || {};
-            _prefs3.critical = checked;
-            writeStoredState(planningPrefsKey, _prefs3);
-          } catch (e) {}
-        });
-      }
-
-      var simulateButton = shell.querySelector("[data-flow-simulate='true']");
-      if (simulateButton) {
-        simulateButton.addEventListener('click', function() {
-          var enabled = shell.classList.toggle('simulate-mode');
-          simulateButton.classList.toggle('is-active', enabled);
-          showMessage(shell, 'success', enabled ? (shell.dataset.flowSimulateOnMessage || 'Simulate mode ON') : (shell.dataset.flowSimulateOffMessage || 'Simulate mode OFF'));
-        });
-      }
 
       // Auto-fit button: compute day width so the whole timeline fits the visible board
       var autoFitButton = shell.querySelector("[data-flow-autoscale='true']");
@@ -1467,24 +1547,6 @@
           var available = Math.max(100, visibleWidth - reserve);
           var fitted = Math.max(8, Math.min(200, Math.floor(available / Math.max(1, totalDays))));
           applyDayWidth(fitted);
-        });
-      }
-
-      // Compact toggle: toggle compact class and persist preference
-      var compactToggleInput = shell.querySelector("[data-flow-compact-toggle='true']");
-      if (compactToggleInput) {
-        compactToggleInput.addEventListener('change', function() {
-          var checked = !!compactToggleInput.checked;
-          shell.classList.toggle('flow-compact', checked);
-          try {
-            var _prefs2 = readStoredState(planningPrefsKey) || {};
-            _prefs2.compact = checked;
-            // keep current dayWidth in prefs as well
-            _prefs2.dayWidth = dayWidth;
-            writeStoredState(planningPrefsKey, _prefs2);
-          } catch (e) {
-            // ignore storage errors
-          }
         });
       }
 

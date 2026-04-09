@@ -9,7 +9,9 @@
      data-flow-saved-message="<%= l(:notice_successful_update) %>"
      data-flow-error-message="<%= l(:text_flow_network_error) %>"
      data-flow-failure-message="<%= l(:text_flow_save_failed) %>"
-     data-flow-storage-key="board:<%= @project&.identifier || 'global' %>">
+     data-flow-storage-key="board:<%= @project&.identifier || 'global' %>"
+     data-flow-unassigned-label="<%= l(:label_flow_unassigned) %>"
+     data-flow-board-empty-group="<%= l(:label_none) %>">
   <div class="flow-page-header">
     <div>
       <h2><%= l(:label_agile_board) %></h2>
@@ -62,6 +64,17 @@
                          options_for_select([[l(:label_flow_all_assignees), '']] + @filter_options[:assignees].map {|assignee| [assignee.name, assignee.id]}),
                          include_blank: false,
                          data: {flow_filter_assignee: true} %>
+
+          <%= select_tag :board_group_by,
+                         options_for_select([
+                           [l(:label_flow_group_none), ''],
+                           [l(:label_flow_group_assignee), 'assignee'],
+                           [l(:label_flow_group_tracker), 'tracker'],
+                           [l(:label_flow_group_priority), 'priority'],
+                           [l(:label_flow_group_version), 'version']
+                         ]),
+                         include_blank: false,
+                         data: {flow_board_grouping: true} %>
 
           <label class="flow-check"><input type="checkbox" data-flow-filter-overdue="true"> <%= l(:label_flow_overdue) %></label>
           <label class="flow-check"><input type="checkbox" data-flow-filter-unassigned="true"> <%= l(:label_flow_unassigned) %></label>
