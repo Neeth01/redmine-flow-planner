@@ -1,0 +1,153 @@
+<% html_title l(:label_agile_board) %>
+
+<% content_for :header_tags do %>
+  <%= stylesheet_link_tag 'redmine_flow_planner', plugin: 'redmine_flow_planner' %>
+  <%= javascript_include_tag 'redmine_flow_planner', plugin: 'redmine_flow_planner' %>
+<% end %>
+
+<div class="flow-shell"
+     data-flow-saved-message="<%= l(:notice_successful_update) %>"
+     data-flow-error-message="<%= l(:text_flow_network_error) %>"
+     data-flow-failure-message="<%= l(:text_flow_save_failed) %>"
+     data-flow-storage-key="board:<%= @project&.identifier || 'global' %>">
+  <div class="flow-page-header">
+    <div>
+      <h2><%= l(:label_agile_board) %></h2>
+      <p class="flow-muted"><%= l(:text_agile_board_summary, count: @issue_count) %></p>
+    </div>
+    <div class="flow-actions">
+      <%= link_to l(:label_issue_plural), project_issues_path(@project, flow_query_params), class: 'icon icon-issue' %>
+      <%= link_to l(:button_clear), project_agile_board_path(@project, set_filter: 1), class: 'icon icon-clear-query' %>
+    </div>
+  </div>
+
+  <% active_filters = flow_query_filters(@query) %>
+
+  <% if active_filters.any? %>
+    <div class="flow-filter-strip">
+      <% active_filters.each do |filter| %>
+        <span class="flow-chip"><%= filter %></span>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if @truncated %>
+    <p class="warning"><%= l(:text_agile_board_truncated, count: @issues.size, total: @issue_count) %></p>
+  <% end %>
+
+  <section class="flow-panel flow-panel--compact">
+    <div class="flow-toolbar-grid flow-toolbar-grid--dense">
+      <div class="flow-toolbar-row">
+        <%= form_tag project_agile_board_path(@project), method: :get, class: 'flow-inline-form flow-inline-form--compact' do %>
+          <%= query_as_hidden_field_tags(@query) %>
+          <label for="board_sort"><%= l(:label_flow_board_sort) %></label>
+          <%= select_tag :sort,
+                         options_for_select(@board_sort_options, @board_sort),
+                         id: 'board_sort',
+                         onchange: 'this.form.submit();' %>
+        <% end %>
+
+        <div class="flow-local-filters flow-local-filters--inline" data-flow-board-filters="true">
+          <input type="search"
+                 class="flow-input"
+                 placeholder="<%= l(:text_flow_search_placeholder) %>"
+                 data-flow-filter-search="true">
+
+          <%= select_tag :board_tracker_filter,
+                         options_for_select([[l(:label_flow_all_trackers), '']] + @filter_options[:trackers].map {|tracker| [tracker.name, tracker.id]}),
+                         include_blank: false,
+                         data: {flow_filter_tracker: true} %>
+
+          <%= select_tag :board_assignee_filter,
+                         options_for_select([[l(:label_flow_all_assignees), '']] + @filter_options[:assignees].map {|assignee| [assignee.name, assignee.id]}),
+                         include_blank: false,
+                         data: {flow_filter_assignee: true} %>
+
+          <label class="flow-check"><input type="checkbox" data-flow-filter-overdue="true"> <%= l(:label_flow_overdue) %></label>
+          <label class="flow-check"><input type="checkbox" data-flow-filter-unassigned="true"> <%= l(:label_flow_unassigned) %></label>
+          <label class="flow-check"><input type="checkbox" data-flow-hide-empty="true"> <%= l(:label_flow_hide_empty_columns) %></label>
+          <button type="button" class="button-small" data-flow-reset-filters="true"><%= l(:button_clear) %></button>
+        </div>
+
+        <button type="button" class="button-small" data-flow-fullscreen-toggle="true" data-flow-fullscreen-target=".flow-board"><%= l(:button_flow_fullscreen) %></button>
+      </div>
+    </div>
+  </section>
+
+  <% if @issues.empty? %>
+    <p class="nodata"><%= l(:text_agile_board_empty) %></p>
+  <% end %>
+
+  <% if @statuses.any? %>
+    <div class="flow-board" data-agile-board="true">
+      <% @board_columns.each do |column| %>
+        <section class="flow-column <%= "is-wip-#{column[:wip_state]}" unless column[:wip_state] == :none %>"
+                 data-agile-column="true"
+                 data-status-id="<%= column[:status].id %>"
+                 data-agile-wip-limit="<%= column[:wip_limit] %>">
+          <header class="flow-column-header">
+            <div>
+              <h3><%= column[:status].name %></h3>
+              <% if column[:wip_limit].to_i.positive? %>
+                <div class="flow-column-hint"><%= l(:text_flow_wip_limit, count: column[:wip_limit]) %></div>
+              <% end %>
+            </div>
+            <div class="flow-column-side">
+              <span class="flow-count" data-agile-count="true"><%= column[:count] %></span>
+              <% if column[:wip_limit].to_i.positive? %>
+                <span class="flow-wip-badge is-<%= column[:wip_state] %>"><%= column[:wip_limit] %></span>
+              <% end %>
+              <% if @can_manage_board %>
+                <button type="button"
+                        class="button-small flow-column-add"
+                        data-agile-add-toggle="true"
+                        title="<%= l(:button_flow_add_issue) %>">
+                  +
+                </button>
+              <% end %>
+            </div>
+          </header>
+          <% if @can_manage_board %>
+            <div class="flow-column-composer" data-agile-create-panel="true" hidden>
+              <form class="flow-column-composer-form"
+                    data-agile-create-form="true"
+                    action="<%= project_agile_board_issues_path(@project) %>"
+                    method="post">
+                <input type="hidden" name="issue[status_id]" value="<%= column[:status].id %>">
+                <input type="text"
+                       name="issue[subject]"
+                       class="flow-input"
+                       placeholder="<%= l(:text_flow_board_new_issue_placeholder, status: column[:status].name) %>"
+                       required
+                       data-agile-create-subject="true">
+                <div class="flow-column-composer-grid">
+                  <%= select_tag 'issue[tracker_id]',
+                                 options_for_select(@quick_create_options[:trackers]),
+                                 include_blank: false %>
+                  <%= select_tag 'issue[assigned_to_id]',
+                                 options_for_select([[l(:label_flow_unassigned), '']] + @quick_create_options[:assignees]),
+                                 include_blank: false %>
+                  <%= select_tag 'issue[priority_id]',
+                                 options_for_select(@quick_create_options[:priorities]),
+                                 include_blank: true %>
+                  <%= date_field_tag 'issue[due_date]', nil %>
+                </div>
+                <div class="flow-column-composer-actions">
+                  <button type="submit" class="button-small"><%= l(:button_flow_add_issue) %></button>
+                  <button type="button" class="button-small" data-agile-add-cancel="true"><%= l(:button_cancel) %></button>
+                </div>
+              </form>
+            </div>
+          <% end %>
+          <div class="flow-column-body" data-agile-list="true">
+            <% column[:issues].each do |issue| %>
+              <%= render partial: 'card', locals: {issue: issue} %>
+            <% end %>
+          </div>
+        </section>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div class="flow-message" data-flow-message hidden></div>
+</div>

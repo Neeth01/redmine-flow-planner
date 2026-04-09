@@ -1,0 +1,123 @@
+en:
+  project_module_flow_planner: Flow Planner
+  label_agile_board: Agile Board
+  label_planning_gantt: Planning Gantt
+  label_flow_unscheduled_issues: Unscheduled issues
+  label_flow_board_limit: Agile board issue limit
+  label_flow_board_sort: Agile board sorting
+  label_flow_board_wip_limits: Column WIP limits
+  label_flow_due_soon_days: Due soon threshold in days
+  label_flow_planner_limit: Planner issue limit
+  label_flow_planner_months: Default planner months
+  label_flow_planner_day_width: Planner day width in pixels
+  label_flow_due_soon: Due soon
+  label_flow_open: Open
+  label_flow_overdue: Overdue
+  label_flow_today: Today
+  label_flow_months: Months
+  label_flow_unscheduled: Unscheduled
+  label_flow_unassigned: Unassigned
+  label_flow_closed: Closed
+  label_flow_all_trackers: All trackers
+  label_flow_all_assignees: All assignees
+  label_flow_hide_empty_columns: Hide empty columns
+  label_flow_columns: Columns
+  label_flow_scheduled: Scheduled
+  label_flow_visible_window: Visible in the window
+  label_flow_versions: Visible versions
+  label_flow_dependencies: Visible dependencies
+  label_flow_scale: Scale
+  label_flow_grid_assignee: Assignee
+  label_flow_grid_dates: Dates
+  label_flow_grid_progress: Progress
+  label_flow_day_width: Day width
+  label_flow_issue_bar: Issue bar
+  label_flow_version_marker: Version marker
+  label_flow_dependency_line: Dependency line
+  label_flow_quick_guide: Quick guide
+  label_flow_show_dependencies: Show dependencies
+  label_flow_show_baselines: Show session baseline
+  label_flow_scale_day: Day
+  label_flow_scale_week: Week
+  label_flow_scale_month: Month
+  label_flow_scale_quarter: Quarter
+  label_flow_sort_priority: Priority
+  label_flow_sort_due_date: Due date
+  label_flow_sort_updated_on: Updated on
+  label_flow_sort_done_ratio: Progress
+  label_flow_sort_subject: Subject
+  label_flow_sort_id: Issue ID
+  label_flow_all_resources: All resources
+  label_flow_board_workspace: Board controls
+  label_flow_timeline_workspace: Timeline controls
+  label_flow_local_filters: Local filters
+  label_flow_saved_queries: Saved queries
+  label_flow_show_critical: Show critical path
+  label_flow_compact: Compact
+  label_flow_color_by: Color by
+  label_flow_color_by_none: No grouping
+  label_flow_color_by_tracker: Tracker
+  label_flow_color_by_priority: Priority
+  label_flow_color_by_assignee: Assignee
+  label_flow_color_by_status: Status
+  label_flow_color_by_version: Version
+  label_flow_export_csv: Export CSV
+  label_flow_edit_selected_issue: Edit selected issue
+  label_flow_plan_issue: Quick planner
+  permission_view_agile_board: View agile board
+  permission_manage_agile_board: Move cards and run quick updates on the agile board
+  permission_view_planning_gantt: View planning gantt
+  permission_manage_planning_gantt: Reschedule issues on the planning gantt
+  button_flow_assign_me: Assign to me
+  button_flow_mark_done: Mark 100%
+  button_flow_undo: Undo last move
+  button_flow_zoom_in: Zoom +
+  button_flow_zoom_out: Zoom -
+  button_flow_simulate: Simulate shift
+  button_flow_autofit: Auto-fit
+  button_flow_add_issue: Add issue
+  button_flow_fullscreen: Fullscreen
+  button_flow_plan_issue: Plan issue
+  button_flow_collapse_all: Collapse all
+  button_flow_expand_all: Expand all
+  text_agile_board_summary: "%{count} issues loaded from the current query."
+  text_agile_board_truncated: "Showing %{count} issues on the board out of %{total}. Increase the board limit in plugin settings if needed."
+  text_agile_board_empty: "No issue matches the current query."
+  text_planning_gantt_summary: "%{count} scheduled issues are visible in the current planning window (%{total} issues in the query)."
+  text_planning_gantt_truncated: "Showing %{count} issues in the planner out of %{total}. Increase the planner limit in plugin settings if needed."
+  text_planning_gantt_outside_window: "%{count} scheduled issues are outside the visible planning window."
+  text_planning_gantt_empty: "No scheduled issue is visible in the current planning window."
+  text_planning_unscheduled_more: "%{count} more issues have no dates."
+  text_planning_drag_help: "Drag a bar to move it. Use the handles to resize the start or end date."
+  text_flow_board_workspace_hint: "Sort the board, keep the current query context and monitor WIP bottlenecks from one place."
+  text_flow_board_filters_hint: "Focus quickly on one assignee, tracker or urgent subset without losing the board structure."
+  text_flow_board_queries_hint: "Keep Redmine saved queries handy without sacrificing board space."
+  text_flow_planning_workspace_hint: "Navigate the window, adjust scale and use simulation tools from one control area."
+  text_flow_planning_filters_hint: "Refine the visible timeline locally so you can focus on the issues that need replanning."
+  text_flow_planning_queries_hint: "Keep Redmine saved queries close without squeezing the timeline."
+  text_flow_planning_unscheduled_hint: "Spot the issues still missing dates before bringing them into the plan."
+  text_flow_board_new_issue_placeholder: "Add an issue in %{status}"
+  text_flow_inline_edit_subject: "Double-click to rename the issue quickly"
+  text_flow_inline_edit_progress: "Double-click to update progress quickly"
+  text_flow_inline_edit_due_date: "Double-click to adjust the due date quickly"
+  text_flow_issue_picker_placeholder: "Pick an issue by number or subject"
+  text_flow_planning_editor_hint: "Select a visible bar or search for an issue to update assignee, version, dates and progress from one compact editor."
+  text_flow_save_failed: "The issue could not be updated."
+  text_flow_network_error: "The server did not accept the change."
+  text_flow_search_placeholder: "Quick search within loaded issues"
+  text_flow_wip_limit: "WIP limit: %{count}"
+  text_flow_board_wip_limits_help: "One limit per line. Recommended format: 'New=8' or '3=5' or 'In Progress:10'."
+  text_flow_board_help_one: "The board keeps the current Redmine query and its filters."
+  text_flow_board_help_two: "Drag a card to another column to request a status transition."
+  text_flow_board_help_three: "Quick search and local filters are stored in your browser."
+  text_flow_board_help_four: "WIP limits highlight bottlenecks directly on the columns."
+  text_flow_planning_help_one: "The planner shows only the issues from the current query that already have dates."
+  text_flow_planning_help_two: "Drag a bar to move an issue, then resize it to adjust its time window."
+  text_flow_planning_help_three: "Dependencies and parent/child hierarchy make the delivery path easier to read."
+  text_flow_planning_help_four: "Undo, zoom and session baseline make replanning safer."
+  text_flow_relation_precedes: Precedes
+  text_flow_relation_blocks: Blocks
+  text_flow_relation_relates: Relates
+  text_flow_due_today: "Today"
+  text_flow_due_tomorrow: "Tomorrow"
+  text_flow_due_soon: "In %{count} days"

@@ -1,0 +1,10 @@
+# Reference material kept locally, not part of the deliverable
+easy/
+
+# Generated distributable archives
+*.zip
+
+# Common local noise
+.DS_Store
+Thumbs.db
+*.log

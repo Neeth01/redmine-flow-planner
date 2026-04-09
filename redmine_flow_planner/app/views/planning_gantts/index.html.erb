@@ -1,0 +1,345 @@
+<% html_title l(:label_planning_gantt) %>
+
+<% content_for :header_tags do %>
+  <%= stylesheet_link_tag 'redmine_flow_planner', plugin: 'redmine_flow_planner' %>
+  <%= javascript_include_tag 'redmine_flow_planner', plugin: 'redmine_flow_planner' %>
+<% end %>
+
+<div class="flow-shell"
+     data-flow-saved-message="<%= l(:notice_successful_update) %>"
+     data-flow-error-message="<%= l(:text_flow_network_error) %>"
+     data-flow-failure-message="<%= l(:text_flow_save_failed) %>"
+     data-flow-storage-key="planning:<%= @project&.identifier || 'global' %>">
+  <div class="flow-page-header">
+    <div>
+      <h2><%= l(:label_planning_gantt) %></h2>
+      <p class="flow-muted"><%= l(:text_planning_gantt_summary, count: @issues.size, total: @issue_count) %></p>
+    </div>
+    <div class="flow-actions">
+      <%= link_to l(:label_issue_plural), project_issues_path(@project, flow_query_params), class: 'icon icon-issue' %>
+      <%= link_to l(:button_clear), project_planning_gantt_path(@project, set_filter: 1), class: 'icon icon-clear-query' %>
+    </div>
+  </div>
+
+  <% active_filters = flow_query_filters(@query) %>
+  <% scale_options = [
+       [l(:label_flow_scale_day), 'day'],
+       [l(:label_flow_scale_week), 'week'],
+       [l(:label_flow_scale_month), 'month'],
+       [l(:label_flow_scale_quarter), 'quarter']
+     ] %>
+
+  <% if active_filters.any? %>
+    <div class="flow-filter-strip">
+      <% active_filters.each do |filter| %>
+        <span class="flow-chip"><%= filter %></span>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if @truncated %>
+    <p class="warning"><%= l(:text_planning_gantt_truncated, count: @all_issues.size, total: @issue_count) %></p>
+  <% end %>
+
+  <% if @outside_window_count.positive? %>
+    <p class="warning"><%= l(:text_planning_gantt_outside_window, count: @outside_window_count) %></p>
+  <% end %>
+
+  <section class="flow-panel flow-panel--compact">
+    <div class="flow-toolbar-grid flow-toolbar-grid--dense">
+      <div class="flow-toolbar-row">
+        <%= form_tag project_planning_gantt_path(@project), method: :get, class: 'flow-inline-form' do %>
+          <%= hidden_field_tag :year, @timeline.previous_params[:year] %>
+          <%= hidden_field_tag :month, @timeline.previous_params[:month] %>
+          <%= hidden_field_tag :months, @timeline.previous_params[:months] %>
+          <%= hidden_field_tag :scale, @scale_preset if @scale_preset.present? %>
+          <%= query_as_hidden_field_tags(@query) %>
+          <%= submit_tag l(:label_previous), name: nil, class: 'button-small' %>
+        <% end %>
+
+        <div class="flow-range-title">
+          <%= planning_gantt_month_label(@timeline.start_date) %> -
+          <%= planning_gantt_month_label(@timeline.end_date) %>
+        </div>
+
+        <%= form_tag project_planning_gantt_path(@project), method: :get, class: 'flow-inline-form' do %>
+          <%= hidden_field_tag :year, @timeline.next_params[:year] %>
+          <%= hidden_field_tag :month, @timeline.next_params[:month] %>
+          <%= hidden_field_tag :months, @timeline.next_params[:months] %>
+          <%= hidden_field_tag :scale, @scale_preset if @scale_preset.present? %>
+          <%= query_as_hidden_field_tags(@query) %>
+          <%= submit_tag l(:label_next), name: nil, class: 'button-small' %>
+        <% end %>
+
+        <%= form_tag project_planning_gantt_path(@project), method: :get, class: 'flow-inline-form flow-inline-form--compact planning-scale-form' do %>
+          <%= hidden_field_tag :year, @timeline.start_date.year %>
+          <%= hidden_field_tag :month, @timeline.start_date.month %>
+          <%= query_as_hidden_field_tags(@query) %>
+          <label for="planning_scale"><%= l(:label_flow_scale) %></label>
+          <%= select_tag :scale,
+                         options_for_select(scale_options, @scale_preset),
+                         id: 'planning_scale',
+                         onchange: 'this.form.submit();' %>
+        <% end %>
+
+        <%= form_tag project_planning_gantt_path(@project), method: :get, class: 'flow-inline-form flow-inline-form--compact' do %>
+          <%= hidden_field_tag :year, @timeline.start_date.year %>
+          <%= hidden_field_tag :month, @timeline.start_date.month %>
+          <%= hidden_field_tag :day_width, @day_width %>
+          <%= hidden_field_tag :scale, @scale_preset if @scale_preset.present? %>
+          <%= query_as_hidden_field_tags(@query) %>
+          <label for="planner_months"><%= l(:label_flow_months) %></label>
+          <%= select_tag :months,
+                         options_for_select((1..12).map {|count| [count, count]}, @timeline.months_count),
+                         id: 'planner_months',
+                         onchange: 'this.form.submit();' %>
+        <% end %>
+      </div>
+
+      <div class="flow-toolbar-row">
+        <%= form_tag project_planning_gantt_path(@project), method: :get, class: 'flow-inline-form flow-inline-form--compact' do %>
+          <%= query_as_hidden_field_tags(@query) %>
+          <label for="planning_start"><%= l(:label_date_from) %></label>
+          <%= date_field_tag :start, @timeline.start_date.iso8601, id: 'planning_start' %>
+          <label for="planning_end"><%= l(:label_date_to) %></label>
+          <%= date_field_tag :end, @timeline.end_date.iso8601, id: 'planning_end' %>
+          <%= hidden_field_tag :day_width, @day_width %>
+          <%= hidden_field_tag :scale, @scale_preset if @scale_preset.present? %>
+          <%= submit_tag l(:button_apply), class: 'button-small' %>
+        <% end %>
+
+        <div class="flow-local-filters flow-local-filters--inline" data-flow-planning-filters="true">
+          <input type="search"
+                 class="flow-input"
+                 placeholder="<%= l(:text_flow_search_placeholder) %>"
+                 data-flow-filter-search="true">
+
+          <%= select_tag :planning_tracker_filter,
+                         options_for_select([[l(:label_flow_all_trackers), '']] + @filter_options[:trackers].map {|tracker| [tracker.name, tracker.id]}),
+                         include_blank: false,
+                         data: {flow_filter_tracker: true} %>
+
+          <%= select_tag :planning_assignee_filter,
+                         options_for_select([[l(:label_flow_all_assignees), '']] + @filter_options[:assignees].map {|assignee| [assignee.name, assignee.id]}),
+                         include_blank: false,
+                         data: {flow_filter_assignee: true} %>
+
+          <label class="flow-check"><input type="checkbox" data-flow-filter-overdue="true"> <%= l(:label_flow_overdue) %></label>
+          <label class="flow-check"><input type="checkbox" data-flow-filter-unassigned="true"> <%= l(:label_flow_unassigned) %></label>
+          <label class="flow-check"><input type="checkbox" data-flow-toggle-relations="true"> <%= l(:label_flow_show_dependencies) %></label>
+          <button type="button" class="button-small" data-flow-reset-filters="true"><%= l(:button_clear) %></button>
+        </div>
+
+        <button type="button" class="button-small" data-flow-zoom-out="true"><%= l(:button_flow_zoom_out) %></button>
+        <button type="button" class="button-small" data-flow-zoom-in="true"><%= l(:button_flow_zoom_in) %></button>
+        <button type="button" class="button-small" data-flow-scroll-today="true"><%= l(:label_flow_today) %></button>
+        <button type="button" class="button-small" data-flow-planning-undo="true" disabled><%= l(:button_flow_undo) %></button>
+      </div>
+    </div>
+  </section>
+
+  <% if @can_manage_planning || @unscheduled_issues.any? %>
+    <div class="flow-utility-grid">
+      <% if @can_manage_planning %>
+        <section class="flow-panel" data-flow-planning-editor="true">
+          <div class="flow-panel-header">
+            <div>
+              <h3><%= l(:label_flow_edit_selected_issue) %></h3>
+              <p class="flow-muted"><%= l(:text_flow_planning_editor_hint) %></p>
+            </div>
+          </div>
+
+          <div class="flow-panel-body">
+            <form class="flow-issue-editor-form" data-flow-planning-editor-form="true">
+              <input type="search"
+                     class="flow-input"
+                     list="planning_issue_picker"
+                     placeholder="<%= l(:text_flow_issue_picker_placeholder) %>"
+                     data-flow-planning-editor-issue="true">
+              <datalist id="planning_issue_picker">
+                <% @issues.each do |issue| %>
+                  <option value="<%= "##{issue.id} #{issue.subject}" %>"></option>
+                <% end %>
+              </datalist>
+
+              <%= select_tag :planning_editor_assignee,
+                             options_for_select([[l(:label_flow_unassigned), '']] + @planning_editor_options[:assignees].map {|assignee| [assignee.name, assignee.id]}),
+                             include_blank: false,
+                             data: {flow_planning_editor_assignee: true} %>
+
+              <%= select_tag :planning_editor_version,
+                             options_for_select([[l(:label_none), '']] + @planning_editor_options[:versions].map {|version| [version.name, version.id]}),
+                             include_blank: false,
+                             data: {flow_planning_editor_version: true} %>
+
+              <%= date_field_tag :planning_editor_start, nil, data: {flow_planning_editor_start: true} %>
+              <%= date_field_tag :planning_editor_due, nil, data: {flow_planning_editor_due: true} %>
+              <%= number_field_tag :planning_editor_done, nil, min: 0, max: 100, step: 1, data: {flow_planning_editor_done: true} %>
+
+              <div class="flow-card-actions">
+                <button type="submit" class="button-small"><%= l(:button_save) %></button>
+                <button type="button" class="button-small" data-flow-planning-editor-reset="true"><%= l(:button_clear) %></button>
+              </div>
+            </form>
+          </div>
+        </section>
+      <% end %>
+
+      <% if @unscheduled_issues.any? %>
+        <details class="flow-panel">
+          <summary class="flow-panel-summary">
+            <span class="flow-chip"><%= l(:label_flow_unscheduled_issues) %></span>
+            <strong><%= @unscheduled_issues.size %> <%= l(:label_issue_plural).downcase %></strong>
+            <span class="flow-muted"><%= l(:text_flow_planning_unscheduled_hint) %></span>
+          </summary>
+
+          <div class="flow-panel-body">
+            <ul class="flow-issue-list">
+              <% @unscheduled_issues.first(10).each do |issue| %>
+                <li>
+                  <%= link_to "##{issue.id} #{issue.subject}", issue_path(issue), title: issue.subject %>
+                  <div class="flow-issue-list-meta"><%= [issue.tracker&.name, issue.assigned_to&.name || l(:label_flow_unassigned)].compact.join(' | ') %></div>
+                </li>
+              <% end %>
+            </ul>
+
+            <% if @unscheduled_issues.size > 10 %>
+              <p class="flow-muted" style="margin-top:12px;"><%= l(:text_planning_unscheduled_more, count: @unscheduled_issues.size - 10) %></p>
+            <% end %>
+          </div>
+        </details>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if @issues.any? %>
+    <div class="planning-board"
+         data-planning-gantt="true"
+         data-day-width="<%= @day_width %>"
+         data-window-start="<%= @timeline.start_date.iso8601 %>"
+         data-window-end="<%= @timeline.end_date.iso8601 %>"
+         data-relations="<%= @dependency_relations.to_json %>">
+      <div class="planning-table"
+           style="--day-width: <%= @day_width %>px; --timeline-width: <%= @timeline.total_width(@day_width) %>px;">
+        <div class="planning-head-subject">
+          <div class="planning-grid-head">
+            <span><%= l(:label_issue) %></span>
+            <span><%= l(:label_flow_grid_assignee) %></span>
+            <span><%= l(:label_flow_grid_dates) %></span>
+            <span><%= l(:label_flow_grid_progress) %></span>
+          </div>
+        </div>
+        <div class="planning-head-timeline">
+          <div class="planning-months">
+            <% @timeline.month_segments.each do |segment| %>
+              <div class="planning-month" style="width: <%= segment[:days] * @day_width %>px;">
+                <%= planning_gantt_month_label(segment[:date]) %>
+              </div>
+            <% end %>
+            <% if @version_markers.any? %>
+              <div class="planning-markers">
+                <% @version_markers.each do |marker| %>
+                  <div class="planning-marker" style="<%= planning_gantt_marker_style(marker[:due_date], @timeline, @day_width) %>">
+                    <span class="planning-marker-label"><%= marker[:name] %></span>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+          <div class="planning-days">
+            <% @timeline.days.each do |day| %>
+              <div class="<%= planning_gantt_day_classes(day) %>" style="width: <%= @day_width %>px;">
+                <span><%= day.day %></span>
+              </div>
+            <% end %>
+            <% if (today_style = planning_gantt_today_style(@timeline, @day_width)) %>
+              <div class="planning-today" style="<%= today_style %>"></div>
+            <% end %>
+          </div>
+        </div>
+
+        <% @issues.each do |issue| %>
+          <% schedule = flow_issue_schedule(issue) %>
+          <% editable = @can_manage_planning && flow_issue_schedule_editable?(issue) %>
+          <% depth = @row_depths[issue.id].to_i %>
+          <% child_count = @children_by_parent[issue.id].size %>
+          <div class="<%= planning_gantt_row_classes(issue) %>"
+               data-planning-row="true"
+               data-issue-id="<%= issue.id %>"
+               data-search-text="<%= [issue.id, issue.subject, issue.tracker&.name, issue.status&.name, issue.assigned_to&.name, issue.fixed_version&.name].compact.join(' ').downcase %>"
+               data-tracker-id="<%= issue.tracker_id %>"
+               data-assignee-id="<%= issue.assigned_to_id %>"
+               data-is-overdue="<%= issue.overdue? %>"
+               data-is-unassigned="<%= issue.assigned_to.blank? %>"
+               data-is-closed="<%= issue.closed? %>">
+            <div class="planning-subject">
+              <div class="planning-grid planning-grid--row">
+                <div class="planning-grid-main">
+                  <div class="planning-title">
+                    <div class="planning-title-line" style="--tree-depth: <%= depth %>;">
+                      <% if depth.positive? %>
+                        <span class="planning-tree-branch" aria-hidden="true"></span>
+                      <% end %>
+                      <% if child_count.positive? %>
+                        <span class="planning-tree-badge"><%= child_count %></span>
+                      <% end %>
+                      <%= link_to "##{issue.id} #{issue.subject}", issue_path(issue), title: issue.subject %>
+                    </div>
+                  </div>
+                </div>
+                <div class="planning-grid-cell planning-grid-cell--assignee"><%= issue.assigned_to&.name || l(:label_flow_unassigned) %></div>
+                <div class="planning-grid-cell planning-grid-cell--dates js-gantt-dates"><%= flow_schedule_label(issue) %></div>
+                <div class="planning-grid-cell planning-grid-cell--progress"><%= issue.done_ratio %>%</div>
+              </div>
+            </div>
+
+            <div class="planning-timeline-cell">
+          <div class="planning-row-track">
+                <div class="planning-baseline"
+                     style="<%= planning_gantt_bar_style(issue, @timeline, @day_width) %>"
+                     data-gantt-baseline="true"
+                     data-start-date="<%= schedule.first.iso8601 %>"
+                     data-due-date="<%= schedule.last.iso8601 %>"></div>
+       <div class="planning-bar <%= 'is-draggable' if editable %> <%= 'is-closed' if issue.closed? %>"
+         style="<%= planning_gantt_bar_style(issue, @timeline, @day_width) %>"
+         data-gantt-bar="true"
+         data-issue-id="<%= issue.id %>"
+         data-update-url="<%= project_planning_gantt_issue_path(@project, issue) %>"
+         data-start-date="<%= schedule.first.iso8601 %>"
+         data-due-date="<%= schedule.last.iso8601 %>"
+         data-baseline-start-date="<%= schedule.first.iso8601 %>"
+         data-baseline-due-date="<%= schedule.last.iso8601 %>"
+         data-depth="<%= depth %>"
+         data-draggable="<%= editable %>"
+         data-done-ratio="<%= issue.done_ratio %>"
+         data-subject="<%= issue.subject %>"
+         data-assigned-to-id="<%= issue.assigned_to_id %>"
+         data-fixed-version-id="<%= issue.fixed_version_id %>"
+         data-tone-tracker="<%= issue.tracker&.name %>"
+         data-tone-priority="<%= issue.priority&.name %>"
+         data-tone-assignee="<%= issue.assigned_to&.name %>"
+         data-tone-status="<%= issue.status&.name %>"
+         data-tone-version="<%= issue.fixed_version&.name %>"
+         data-critical="<%= 'true' if @critical_issue_ids && @critical_issue_ids.include?(issue.id) %>"
+         data-status-name="<%= issue.status&.name %>"
+         data-tracker-name="<%= issue.tracker&.name %>"
+         data-priority-name="<%= issue.priority&.name %>">
+                  <span class="planning-bar-label"><%= issue.done_ratio %>%</span>
+                  <% if editable %>
+                    <span class="planning-handle planning-handle--start" data-gantt-handle="start"></span>
+                    <span class="planning-handle planning-handle--end" data-gantt-handle="end"></span>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+      <svg class="planning-relations-layer" data-planning-relations-layer="true" aria-hidden="true"></svg>
+    </div>
+  <% else %>
+    <p class="nodata"><%= l(:text_planning_gantt_empty) %></p>
+  <% end %>
+
+  <div class="flow-message" data-flow-message hidden></div>
+</div>

@@ -1,0 +1,123 @@
+fr:
+  project_module_flow_planner: Flow Planner
+  label_agile_board: Tableau agile
+  label_planning_gantt: Gantt interactif
+  label_flow_unscheduled_issues: Tickets sans dates
+  label_flow_board_limit: Limite de tickets du tableau agile
+  label_flow_board_sort: Tri du tableau agile
+  label_flow_board_wip_limits: Limites WIP par colonne
+  label_flow_due_soon_days: Fenetre de tickets a echeance proche
+  label_flow_planner_limit: Limite de tickets du planning
+  label_flow_planner_months: Nombre de mois affiches par defaut
+  label_flow_planner_day_width: Largeur d'une journee dans le planning
+  label_flow_due_soon: A echeance proche
+  label_flow_open: Ouverts
+  label_flow_overdue: En retard
+  label_flow_today: Aujourd'hui
+  label_flow_months: Mois
+  label_flow_unscheduled: Sans dates
+  label_flow_unassigned: Non assigne
+  label_flow_closed: Fermes
+  label_flow_all_trackers: Tous les trackers
+  label_flow_all_assignees: Tous les assignes
+  label_flow_hide_empty_columns: Masquer les colonnes vides
+  label_flow_columns: Colonnes
+  label_flow_scheduled: Planifies
+  label_flow_visible_window: Visibles dans la fenetre
+  label_flow_versions: Versions visibles
+  label_flow_dependencies: Dependances visibles
+  label_flow_scale: Echelle
+  label_flow_grid_assignee: Assigne
+  label_flow_grid_dates: Dates
+  label_flow_grid_progress: Progression
+  label_flow_day_width: Largeur par jour
+  label_flow_issue_bar: Barre de ticket
+  label_flow_version_marker: Repere de version
+  label_flow_dependency_line: Liaison
+  label_flow_quick_guide: Guide rapide
+  label_flow_show_dependencies: Afficher les dependances
+  label_flow_show_baselines: Afficher la baseline de session
+  label_flow_scale_day: Jour
+  label_flow_scale_week: Semaine
+  label_flow_scale_month: Mois
+  label_flow_scale_quarter: Trimestre
+  label_flow_sort_priority: Priorite
+  label_flow_sort_due_date: Date d'echeance
+  label_flow_sort_updated_on: Mise a jour
+  label_flow_sort_done_ratio: Progression
+  label_flow_sort_subject: Sujet
+  label_flow_sort_id: ID du ticket
+  label_flow_all_resources: Toutes les ressources
+  label_flow_board_workspace: Pilotage du tableau
+  label_flow_timeline_workspace: Pilotage du planning
+  label_flow_local_filters: Filtres locaux
+  label_flow_saved_queries: Requetes enregistrees
+  label_flow_show_critical: Afficher le chemin critique
+  label_flow_compact: Compact
+  label_flow_color_by: Colorer par
+  label_flow_color_by_none: Aucun regroupement
+  label_flow_color_by_tracker: Tracker
+  label_flow_color_by_priority: Priorite
+  label_flow_color_by_assignee: Assigne
+  label_flow_color_by_status: Statut
+  label_flow_color_by_version: Version
+  label_flow_export_csv: Export CSV
+  label_flow_edit_selected_issue: Editer le ticket selectionne
+  label_flow_plan_issue: Planification rapide
+  permission_view_agile_board: Voir le tableau agile
+  permission_manage_agile_board: Deplacer et modifier rapidement les cartes du tableau agile
+  permission_view_planning_gantt: Voir le gantt interactif
+  permission_manage_planning_gantt: Replanifier les tickets dans le gantt interactif
+  button_flow_assign_me: M'assigner
+  button_flow_mark_done: Marquer 100%
+  button_flow_undo: Annuler le dernier deplacement
+  button_flow_zoom_in: Zoom +
+  button_flow_zoom_out: Zoom -
+  button_flow_simulate: Simuler un decalage
+  button_flow_autofit: Ajuster a la largeur
+  button_flow_add_issue: Ajouter un ticket
+  button_flow_fullscreen: Plein ecran
+  button_flow_plan_issue: Planifier
+  button_flow_collapse_all: Tout replier
+  button_flow_expand_all: Tout deplier
+  text_agile_board_summary: "%{count} tickets charges depuis la requete courante."
+  text_agile_board_truncated: "%{count} tickets sont affiches sur le tableau sur %{total}. Augmentez la limite dans la configuration du plugin si necessaire."
+  text_agile_board_empty: "Aucun ticket ne correspond a la requete courante."
+  text_planning_gantt_summary: "%{count} tickets planifies sont visibles dans la fenetre courante (%{total} tickets dans la requete)."
+  text_planning_gantt_truncated: "%{count} tickets sont affiches dans le planning sur %{total}. Augmentez la limite dans la configuration du plugin si necessaire."
+  text_planning_gantt_outside_window: "%{count} tickets planifies sont en dehors de la fenetre visible."
+  text_planning_gantt_empty: "Aucun ticket planifie n'est visible dans la fenetre courante."
+  text_planning_unscheduled_more: "%{count} tickets supplementaires n'ont pas de dates."
+  text_planning_drag_help: "Glissez une barre pour la deplacer. Utilisez les poignees pour ajuster la date de debut ou de fin."
+  text_flow_board_workspace_hint: "Triez le board, gardez le contexte de la requete et pilotez visuellement les goulets WIP."
+  text_flow_board_filters_hint: "Isolez rapidement un assigne, un tracker ou une situation urgente sans perdre la structure du tableau."
+  text_flow_board_queries_hint: "Retrouvez vos requetes Redmine sans sacrifier l'espace utile du board."
+  text_flow_planning_workspace_hint: "Naviguez dans la fenetre, ajustez l'echelle et activez les outils de simulation depuis une seule zone."
+  text_flow_planning_filters_hint: "Affinez l'affichage du planning localement pour vous concentrer sur les tickets a replanifier."
+  text_flow_planning_queries_hint: "Conservez vos requetes Redmine a portee de main sans comprimer la timeline."
+  text_flow_planning_unscheduled_hint: "Reperez vite les tickets qui n'ont pas encore de dates avant de les faire entrer dans le planning."
+  text_flow_board_new_issue_placeholder: "Ajouter un ticket dans %{status}"
+  text_flow_inline_edit_subject: "Double-cliquez pour renommer rapidement le ticket"
+  text_flow_inline_edit_progress: "Double-cliquez pour modifier rapidement l'avancement"
+  text_flow_inline_edit_due_date: "Double-cliquez pour ajuster rapidement l'echeance"
+  text_flow_issue_picker_placeholder: "Choisissez un ticket par son numero ou son sujet"
+  text_flow_planning_editor_hint: "Selectionnez une barre ou recherchez un ticket visible pour ajuster assigne, version, dates et avancement depuis un seul formulaire."
+  text_flow_save_failed: "Le ticket n'a pas pu etre mis a jour."
+  text_flow_network_error: "Le serveur a refuse la modification."
+  text_flow_search_placeholder: "Recherche rapide dans les tickets charges"
+  text_flow_wip_limit: "Limite WIP: %{count}"
+  text_flow_board_wip_limits_help: "Une ligne par limite. Format conseille: 'Nouveau=8' ou '3=5' ou 'En cours:10'."
+  text_flow_board_help_one: "Le board reprend la requete Redmine courante et conserve ses filtres."
+  text_flow_board_help_two: "Glissez une carte vers une autre colonne pour demander un changement de statut."
+  text_flow_board_help_three: "La recherche et les filtres locaux sont memorises dans votre navigateur."
+  text_flow_board_help_four: "Les limites WIP colorent les colonnes pour signaler les goulets."
+  text_flow_planning_help_one: "Le planning affiche uniquement les tickets de la requete courante qui ont des dates."
+  text_flow_planning_help_two: "Glissez une barre pour decaler un ticket, puis redimensionnez-la pour ajuster sa plage."
+  text_flow_planning_help_three: "Les dependances et la hierarchy parent/enfant facilitent la lecture du chemin de travail."
+  text_flow_planning_help_four: "Undo, zoom et baseline de session aident a replanifier sans perdre le contexte."
+  text_flow_relation_precedes: Precede
+  text_flow_relation_blocks: Bloque
+  text_flow_relation_relates: Lie
+  text_flow_due_today: "Aujourd'hui"
+  text_flow_due_tomorrow: "Demain"
+  text_flow_due_soon: "Dans %{count} jours"

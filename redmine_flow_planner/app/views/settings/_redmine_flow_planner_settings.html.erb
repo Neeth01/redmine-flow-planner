@@ -1,0 +1,48 @@
+<p>
+  <label for="settings_board_limit"><%= l(:label_flow_board_limit) %></label>
+  <%= text_field_tag 'settings[board_limit]', settings['board_limit'], id: 'settings_board_limit', size: 6 %>
+</p>
+
+<p>
+  <label for="settings_board_default_sort"><%= l(:label_flow_board_sort) %></label>
+  <%= select_tag 'settings[board_default_sort]',
+                 options_for_select([
+                   [l(:label_flow_sort_priority), 'priority'],
+                   [l(:label_flow_sort_due_date), 'due_date'],
+                   [l(:label_flow_sort_updated_on), 'updated_on'],
+                   [l(:label_flow_sort_done_ratio), 'done_ratio'],
+                   [l(:label_flow_sort_subject), 'subject'],
+                   [l(:label_flow_sort_id), 'id']
+                 ], settings['board_default_sort']),
+                 id: 'settings_board_default_sort' %>
+</p>
+
+<p>
+  <label for="settings_board_wip_limits"><%= l(:label_flow_board_wip_limits) %></label>
+  <%= text_area_tag 'settings[board_wip_limits]',
+                    settings['board_wip_limits'],
+                    id: 'settings_board_wip_limits',
+                    rows: 5,
+                    cols: 60 %>
+  <em class="info"><%= l(:text_flow_board_wip_limits_help) %></em>
+</p>
+
+<p>
+  <label for="settings_due_soon_days"><%= l(:label_flow_due_soon_days) %></label>
+  <%= text_field_tag 'settings[due_soon_days]', settings['due_soon_days'], id: 'settings_due_soon_days', size: 6 %>
+</p>
+
+<p>
+  <label for="settings_planner_limit"><%= l(:label_flow_planner_limit) %></label>
+  <%= text_field_tag 'settings[planner_limit]', settings['planner_limit'], id: 'settings_planner_limit', size: 6 %>
+</p>
+
+<p>
+  <label for="settings_planner_months"><%= l(:label_flow_planner_months) %></label>
+  <%= text_field_tag 'settings[planner_months]', settings['planner_months'], id: 'settings_planner_months', size: 6 %>
+</p>
+
+<p>
+  <label for="settings_planner_day_width"><%= l(:label_flow_planner_day_width) %></label>
+  <%= text_field_tag 'settings[planner_day_width]', settings['planner_day_width'], id: 'settings_planner_day_width', size: 6 %>
+</p>
