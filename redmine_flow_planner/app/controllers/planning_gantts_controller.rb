@@ -11,8 +11,9 @@ class PlanningGanttsController < ApplicationController
   menu_item :planning_gantt
 
   before_action :find_optional_project
-  before_action :authorize
+  before_action :authorize_planning_view!
   before_action :find_issue_for_update, only: :update_issue
+  before_action :authorize_planning_manage!, only: :update_issue
 
   helper :planning_gantts
   helper :issues
@@ -30,10 +31,13 @@ class PlanningGanttsController < ApplicationController
     @scale_preset = scale_preset_name
     retrieve_query(IssueQuery, true)
     @query.group_by = nil if @query
-    @all_issues = @query.issues(
-      limit: @settings.planner_limit,
+    @query_total = @query.issue_count
+    raw_issues = @query.issues(
+      limit: query_limit,
       include: [:tracker, :assigned_to, :priority, :fixed_version, :author]
     )
+    authorized_issues = filter_authorized_issues(raw_issues)
+    @all_issues = authorized_issues.first(@settings.planner_limit)
     @timeline = RedmineFlowPlanner::Timeline.new(
       params: params,
       issues: @all_issues,
@@ -46,8 +50,8 @@ class PlanningGanttsController < ApplicationController
     @issues = ordered_visible_issues(@issues, @children_by_parent)
     @row_depths = issue_depths(@issues)
     @outside_window_count = @scheduled_issues.size - @issues.size
-    @issue_count = @query.issue_count
-    @truncated = @issue_count > @all_issues.size
+    @issue_count = @all_issues.size
+    @truncated = authorized_issues.size > @all_issues.size || @query_total > @all_issues.size
     @dependency_relations = dependency_relations(@issues)
     # Compute critical path for visible issues and mark relations
     cp = compute_critical_path(@issues, @dependency_relations)
@@ -65,7 +69,7 @@ class PlanningGanttsController < ApplicationController
       assignees: @filter_options[:assignees],
       versions: available_versions
     }
-    @can_manage_planning = User.current.allowed_to?(:manage_planning_gantt, @project)
+    @can_manage_planning = @all_issues.any? {|issue| can_manage_planning_for?(issue.project)} || can_manage_planning_for?(@project)
   rescue ActiveRecord::RecordNotFound
     render_404
   end
@@ -136,6 +140,8 @@ class PlanningGanttsController < ApplicationController
       tracker_name: issue.tracker&.name,
       priority_id: issue.priority_id,
       priority_name: issue.priority&.name,
+      project_id: issue.project_id,
+      project_name: issue.project&.name,
       done_ratio: issue.done_ratio,
       critical: @critical_issue_ids && @critical_issue_ids.include?(issue.id),
       overdue: issue.overdue?,
@@ -252,7 +258,8 @@ class PlanningGanttsController < ApplicationController
   end
 
   def scale_preset_name
-    name = params[:scale].to_s
+    name = params[:scale].presence.to_s
+    name = @settings.planner_default_scale if name.blank? && defined?(@settings) && @settings
     SCALE_PRESETS.key?(name) ? name : nil
   end
 
@@ -275,6 +282,7 @@ class PlanningGanttsController < ApplicationController
 
   def filter_collection(issues)
     {
+      projects: issues.map(&:project).compact.uniq.sort_by(&:name),
       trackers: issues.map(&:tracker).compact.uniq.sort_by(&:name),
       assignees: issues.map(&:assigned_to).compact.uniq.sort_by(&:name)
     }
@@ -358,7 +366,7 @@ class PlanningGanttsController < ApplicationController
   end
 
   def available_versions
-    return [] unless @project
+    return @all_issues.map(&:fixed_version).compact.uniq.sort_by {|version| [version.effective_date || Date.new(9999, 12, 31), version.name.to_s.downcase]} unless @project
 
     project_ids = Project.where('lft >= ? AND rgt <= ?', @project.lft, @project.rgt).pluck(:id)
     Version.where(project_id: project_ids).order(:effective_date, :name).to_a
@@ -379,6 +387,56 @@ class PlanningGanttsController < ApplicationController
 
     issue.project_id == @project.id ||
       (issue.project.lft >= @project.lft && issue.project.rgt <= @project.rgt)
+  end
+
+  def authorize_planning_view!
+    return if can_view_planning_for?(@project)
+    return if @project.blank? && global_planning_projects.any?
+
+    raise Unauthorized
+  end
+
+  def authorize_planning_manage!
+    scope_project = @issue&.project || @project
+    raise Unauthorized unless can_manage_planning_for?(scope_project)
+  end
+
+  def can_view_planning_for?(project)
+    return true if User.current.admin?
+    return false if project.blank?
+
+    User.current.allowed_to?(:view_planning_gantt, project)
+  end
+
+  def can_manage_planning_for?(project)
+    return true if User.current.admin?
+    return false if project.blank?
+
+    User.current.allowed_to?(:manage_planning_gantt, project)
+  end
+
+  def global_planning_projects
+    @global_planning_projects ||= selectable_projects_for(:view_planning_gantt)
+  end
+
+  def selectable_projects_for(permission)
+    scope = Project.visible
+    scope = scope.has_module(:flow_planner) if scope.respond_to?(:has_module)
+    return scope.order(:name).to_a if User.current.admin?
+
+    scope.order(:name).select {|project| User.current.allowed_to?(permission, project)}
+  rescue StandardError
+    []
+  end
+
+  def filter_authorized_issues(issues)
+    Array(issues).select {|issue| can_view_planning_for?(issue.project)}
+  end
+
+  def query_limit
+    return @settings.planner_limit unless @project.blank?
+
+    [@settings.planner_limit * 3, 1000].min
   end
 
   def render_bad_request(exception)

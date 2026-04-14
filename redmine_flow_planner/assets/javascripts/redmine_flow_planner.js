@@ -274,6 +274,7 @@
       search: normalizeText(shell.querySelector("[data-flow-filter-search='true']") && shell.querySelector("[data-flow-filter-search='true']").value),
       trackerId: String(shell.querySelector("[data-flow-filter-tracker='true']") && shell.querySelector("[data-flow-filter-tracker='true']").value || ""),
       assigneeId: String(shell.querySelector("[data-flow-filter-assignee='true']") && shell.querySelector("[data-flow-filter-assignee='true']").value || ""),
+      projectId: String(shell.querySelector("[data-flow-filter-project='true']") && shell.querySelector("[data-flow-filter-project='true']").value || ""),
       groupBy: String(shell.querySelector("[data-flow-board-grouping='true']") && shell.querySelector("[data-flow-board-grouping='true']").value || ""),
       overdueOnly: !!(shell.querySelector("[data-flow-filter-overdue='true']") && shell.querySelector("[data-flow-filter-overdue='true']").checked),
       unassignedOnly: !!(shell.querySelector("[data-flow-filter-unassigned='true']") && shell.querySelector("[data-flow-filter-unassigned='true']").checked),
@@ -288,42 +289,43 @@
 
   function restoreBoardFilters(shell) {
     var state = readStoredState(boardFilterStorageKey(shell));
-
-    if (!state) {
-      return;
-    }
+    var defaultGrouping = String((shell && shell.dataset.flowBoardDefaultGroup) || "");
 
     var search = shell.querySelector("[data-flow-filter-search='true']");
     var tracker = shell.querySelector("[data-flow-filter-tracker='true']");
     var assignee = shell.querySelector("[data-flow-filter-assignee='true']");
+    var project = shell.querySelector("[data-flow-filter-project='true']");
     var grouping = shell.querySelector("[data-flow-board-grouping='true']");
     var overdue = shell.querySelector("[data-flow-filter-overdue='true']");
     var unassigned = shell.querySelector("[data-flow-filter-unassigned='true']");
     var closed = shell.querySelector("[data-flow-filter-closed='true']");
     var hideEmpty = shell.querySelector("[data-flow-hide-empty='true']");
 
-    if (search) {
+    if (search && state) {
       search.value = state.search || "";
     }
-    if (tracker) {
+    if (tracker && state) {
       tracker.value = state.trackerId || "";
     }
-    if (assignee) {
+    if (assignee && state) {
       assignee.value = state.assigneeId || "";
     }
-    if (grouping) {
-      grouping.value = state.groupBy || "";
+    if (project && state) {
+      project.value = state.projectId || "";
     }
-    if (overdue) {
+    if (grouping) {
+      grouping.value = state ? (state.groupBy || "") : defaultGrouping;
+    }
+    if (overdue && state) {
       overdue.checked = !!state.overdueOnly;
     }
-    if (unassigned) {
+    if (unassigned && state) {
       unassigned.checked = !!state.unassignedOnly;
     }
-    if (closed) {
+    if (closed && state) {
       closed.checked = !!state.closedOnly;
     }
-    if (hideEmpty) {
+    if (hideEmpty && state) {
       hideEmpty.checked = !!state.hideEmpty;
     }
   }
@@ -342,6 +344,10 @@
     }
 
     if (state.assigneeId && String(card.dataset.assigneeId || "") !== state.assigneeId) {
+      return false;
+    }
+
+    if (state.projectId && String(card.dataset.projectId || "") !== state.projectId) {
       return false;
     }
 
@@ -403,6 +409,9 @@
     }
     if (state.groupBy === "version") {
       return card.dataset.versionName || noneLabel;
+    }
+    if (state.groupBy === "project") {
+      return card.dataset.projectName || noneLabel;
     }
 
     return "";
@@ -738,20 +747,21 @@
       var subject = card.querySelector("[data-agile-inline-subject='true']");
       var due = card.querySelector("[data-agile-inline-due='true']");
       var done = card.querySelector("[data-agile-inline-done='true']");
+      var inlineEditingEnabled = shell.dataset.flowBoardInlineEdit === "true";
 
-      if (subject) {
+      if (inlineEditingEnabled && subject) {
         subject.addEventListener("dblclick", function(event) {
           event.preventDefault();
           beginAgileInlineEdit(card, shell, board, "subject");
         });
       }
-      if (due) {
+      if (inlineEditingEnabled && due) {
         due.addEventListener("dblclick", function(event) {
           event.preventDefault();
           beginAgileInlineEdit(card, shell, board, "due_date");
         });
       }
-      if (done) {
+      if (inlineEditingEnabled && done) {
         done.addEventListener("dblclick", function(event) {
           event.preventDefault();
           beginAgileInlineEdit(card, shell, board, "done_ratio");
@@ -936,6 +946,10 @@
           shell.querySelectorAll("[data-flow-board-filters='true'] select").forEach(function(select) {
             select.value = "";
           });
+          var groupingSelect = shell.querySelector("[data-flow-board-grouping='true']");
+          if (groupingSelect) {
+            groupingSelect.value = String(shell.dataset.flowBoardDefaultGroup || "");
+          }
           shell.querySelectorAll("[data-flow-board-filters='true'] input[type='checkbox']").forEach(function(input) {
             input.checked = false;
           });
@@ -1142,6 +1156,7 @@
       search: normalizeText(shell.querySelector("[data-flow-filter-search='true']") && shell.querySelector("[data-flow-filter-search='true']").value),
       trackerId: String(shell.querySelector("[data-flow-filter-tracker='true']") && shell.querySelector("[data-flow-filter-tracker='true']").value || ""),
       assigneeId: String(shell.querySelector("[data-flow-filter-assignee='true']") && shell.querySelector("[data-flow-filter-assignee='true']").value || ""),
+      projectId: String(shell.querySelector("[data-flow-filter-project='true']") && shell.querySelector("[data-flow-filter-project='true']").value || ""),
       overdueOnly: !!(shell.querySelector("[data-flow-filter-overdue='true']") && shell.querySelector("[data-flow-filter-overdue='true']").checked),
       unassignedOnly: !!(shell.querySelector("[data-flow-filter-unassigned='true']") && shell.querySelector("[data-flow-filter-unassigned='true']").checked),
       closedOnly: !!(shell.querySelector("[data-flow-filter-closed='true']") && shell.querySelector("[data-flow-filter-closed='true']").checked),
@@ -1156,42 +1171,43 @@
 
   function restorePlanningFilters(shell) {
     var state = readStoredState(planningFilterStorageKey(shell));
-
-    if (!state) {
-      return;
-    }
+    var defaultRelations = String((shell && shell.dataset.flowPlanningRelationsDefault) || "true") !== "false";
 
     var search = shell.querySelector("[data-flow-filter-search='true']");
     var tracker = shell.querySelector("[data-flow-filter-tracker='true']");
     var assignee = shell.querySelector("[data-flow-filter-assignee='true']");
+    var project = shell.querySelector("[data-flow-filter-project='true']");
     var overdue = shell.querySelector("[data-flow-filter-overdue='true']");
     var unassigned = shell.querySelector("[data-flow-filter-unassigned='true']");
     var closed = shell.querySelector("[data-flow-filter-closed='true']");
     var relations = shell.querySelector("[data-flow-toggle-relations='true']");
     var baselines = shell.querySelector("[data-flow-toggle-baselines='true']");
 
-    if (search) {
+    if (search && state) {
       search.value = state.search || "";
     }
-    if (tracker) {
+    if (tracker && state) {
       tracker.value = state.trackerId || "";
     }
-    if (assignee) {
+    if (assignee && state) {
       assignee.value = state.assigneeId || "";
     }
-    if (overdue) {
+    if (project && state) {
+      project.value = state.projectId || "";
+    }
+    if (overdue && state) {
       overdue.checked = !!state.overdueOnly;
     }
-    if (unassigned) {
+    if (unassigned && state) {
       unassigned.checked = !!state.unassignedOnly;
     }
-    if (closed) {
+    if (closed && state) {
       closed.checked = !!state.closedOnly;
     }
     if (relations) {
-      relations.checked = state.showRelations !== false;
+      relations.checked = state ? state.showRelations !== false : defaultRelations;
     }
-    if (baselines) {
+    if (baselines && state) {
       baselines.checked = !!state.showBaselines;
     }
   }
@@ -1213,6 +1229,10 @@
       return false;
     }
 
+    if (state.projectId && String(row.dataset.projectId || "") !== state.projectId) {
+      return false;
+    }
+
     if (state.overdueOnly && row.dataset.isOverdue !== "true") {
       return false;
     }
@@ -1228,7 +1248,10 @@
     return true;
   }
 
-  function planningRelationColor(type) {
+  function planningRelationColor(root, type) {
+    var styles = root ? window.getComputedStyle(root) : null;
+    var defaultColor = styles ? styles.getPropertyValue("--flow-gantt-relation").trim() : "";
+
     if (type === "blocks") {
       return "#b42318";
     }
@@ -1236,7 +1259,7 @@
       return "#667085";
     }
 
-    return "#0f5f9c";
+    return defaultColor || "#0f5f9c";
   }
 
   function planningRelationDash(type) {
@@ -1319,7 +1342,7 @@
       var endX = Math.round(toRect.left - rootRect.left + root.scrollLeft);
       var endY = Math.round(toRect.top + (toRect.height / 2) - rootRect.top + root.scrollTop);
       var elbowX = startX + Math.max(24, Math.min(84, Math.round((endX - startX) / 2)));
-      var color = planningRelationColor(relation.relation_type);
+      var color = planningRelationColor(root, relation.relation_type);
       var dash = planningRelationDash(relation.relation_type);
       var endPointX = endX > elbowX ? endX - 8 : elbowX + 8;
 
@@ -1857,7 +1880,7 @@
           });
           var relationsToggle = shell.querySelector("[data-flow-toggle-relations='true']");
           if (relationsToggle) {
-            relationsToggle.checked = true;
+            relationsToggle.checked = String(shell.dataset.flowPlanningRelationsDefault || "true") !== "false";
           }
           persistPlanningFilters(shell);
           applyPlanningFilters(root);

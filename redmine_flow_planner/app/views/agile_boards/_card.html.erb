@@ -2,21 +2,30 @@
 <% card_classes << 'is-closed' if issue.closed? %>
 <% card_classes << 'is-overdue' if issue.overdue? %>
 <% card_classes << 'is-behind' if issue.respond_to?(:behind_schedule?) && issue.behind_schedule? %>
-<% editable = @can_manage_board %>
-<% assignee_editable = @can_manage_board && User.current.logged? && issue.assigned_to != User.current %>
-<% done_ratio_editable = @can_manage_board && issue.done_ratio.to_i < 100 %>
+<% checklist_stats = flow_checklist_stats(issue) %>
+<% card_classes << 'is-blocked' if checklist_stats[:blocked] %>
+<% editable = flow_issue_manageable_on_board?(issue) && flow_issue_status_editable?(issue) %>
+<% assignee_editable = editable && User.current.logged? && issue.assigned_to != User.current && flow_issue_assignee_editable?(issue) %>
+<% done_ratio_editable = editable && issue.done_ratio.to_i < 100 && flow_issue_done_ratio_editable?(issue) %>
 <% payload_me = {issue: {assigned_to_id: 'me'}}.to_json %>
 <% payload_done = {issue: {done_ratio: 100}}.to_json %>
+<% subject_hint = @settings.board_inline_edit? ? l(:text_flow_inline_edit_subject) : nil %>
+<% due_hint = @settings.board_inline_edit? ? l(:text_flow_inline_edit_due_date) : nil %>
+<% progress_hint = @settings.board_inline_edit? ? l(:text_flow_inline_edit_progress) : nil %>
+<% project_style = flow_global_mode? ? flow_project_style(issue.project) : '' %>
+<% card_classes << 'is-project-toned' if project_style.present? %>
 
 <article class="<%= card_classes.join(' ') %>"
          data-agile-card="true"
          data-issue-id="<%= issue.id %>"
          data-issue-url="<%= issue_path(issue) %>"
-         data-update-url="<%= project_agile_board_issue_path(@project, issue) %>"
+         data-update-url="<%= flow_agile_board_issue_path_for(issue, @project) %>"
          data-subject="<%= issue.subject %>"
          data-status-id="<%= issue.status_id %>"
          data-status-name="<%= issue.status.name %>"
-         data-search-text="<%= [issue.id, issue.subject, issue.tracker&.name, issue.priority&.name, issue.status&.name, issue.assigned_to&.name, issue.fixed_version&.name].compact.join(' ').downcase %>"
+         data-search-text="<%= [issue.id, issue.subject, issue.project&.name, issue.tracker&.name, issue.priority&.name, issue.status&.name, issue.assigned_to&.name, issue.fixed_version&.name].compact.join(' ').downcase %>"
+         data-project-id="<%= issue.project_id %>"
+         data-project-name="<%= issue.project&.name %>"
          data-tracker-id="<%= issue.tracker_id %>"
          data-tracker-name="<%= issue.tracker&.name %>"
          data-priority-id="<%= issue.priority_id %>"
@@ -38,37 +47,43 @@
          data-estimated-hours="<%= issue.respond_to?(:estimated_hours) ? issue.estimated_hours.to_f : 0.0 %>"
          data-spent-hours="<%= issue.respond_to?(:spent_hours) ? issue.spent_hours.to_f : 0.0 %>"
          data-draggable="<%= editable %>"
+         style="<%= project_style %>"
          draggable="<%= editable %>">
   <div class="flow-card-top">
     <span class="flow-card-id"><%= link_to "##{issue.id}", issue_path(issue) %></span>
     <div class="flow-card-badges">
       <% if issue.overdue? %>
-        <strong class="flow-pill is-alert js-agile-due" data-agile-inline-due="true" title="<%= l(:text_flow_inline_edit_due_date) %>"><%= l(:label_flow_overdue) %></strong>
+        <strong class="flow-pill is-alert js-agile-due" data-agile-inline-due="true" title="<%= due_hint %>"><%= l(:label_flow_overdue) %></strong>
       <% elsif issue.due_date && !issue.closed? %>
-        <strong class="flow-pill js-agile-due" data-agile-inline-due="true" title="<%= l(:text_flow_inline_edit_due_date) %>"><%= flow_due_label(issue, @settings.due_soon_days) %></strong>
-      <% else %>
-        <strong class="flow-pill js-agile-due" data-agile-inline-due="true" title="<%= l(:text_flow_inline_edit_due_date) %>"><%= l(:label_none) %></strong>
+        <strong class="flow-pill js-agile-due" data-agile-inline-due="true" title="<%= due_hint %>"><%= flow_due_label(issue, @settings.due_soon_days) %></strong>
       <% end %>
     </div>
   </div>
 
-  <h4 class="flow-card-title" data-agile-inline-subject="true" title="<%= l(:text_flow_inline_edit_subject) %>">
+  <h4 class="flow-card-title" data-agile-inline-subject="true" title="<%= subject_hint %>">
     <%= link_to issue.subject, issue_path(issue), title: issue.subject %>
   </h4>
 
   <div class="flow-card-meta">
-    <span class="flow-mini-badge"><%= issue.tracker.name %></span>
-    <% if issue.priority %>
-      <span class="flow-mini-badge"><%= issue.priority.name %></span>
+    <% if flow_global_mode? %>
+      <span class="flow-mini-badge is-project"><%= issue.project&.name %></span>
     <% end %>
-    <% if issue.fixed_version %>
+    <% if @settings.board_show_version_badges? && issue.fixed_version %>
       <span class="flow-mini-badge is-soft"><%= issue.fixed_version.name %></span>
+    <% end %>
+    <% if checklist_stats[:blocked] %>
+      <span class="flow-mini-badge is-alert"><%= l(:label_flow_checklist_blocked) %></span>
+    <% elsif @settings.checklist_show_summary? && checklist_stats[:total].positive? %>
+      <span class="flow-mini-badge is-checklist"><%= flow_checklist_summary_label(issue) %></span>
     <% end %>
   </div>
 
   <div class="flow-card-summary">
     <span class="js-agile-assignee"><%= issue.assigned_to&.name || l(:label_flow_unassigned) %></span>
-    <strong class="js-agile-done" data-agile-inline-done="true" title="<%= l(:text_flow_inline_edit_progress) %>"><%= issue.done_ratio %>%</strong>
+    <strong class="js-agile-done" data-agile-inline-done="true" title="<%= progress_hint %>"><%= issue.done_ratio %>%</strong>
+    <% if @settings.checklist_show_summary? && checklist_stats[:required_total].positive? %>
+      <span class="flow-checklist-inline"><%= flow_checklist_required_label(issue) %></span>
+    <% end %>
   </div>
 
   <div class="flow-card-progress">
@@ -78,18 +93,20 @@
     <span class="flow-card-progress-value"><%= issue.done_ratio %>%</span>
   </div>
 
-  <div class="flow-card-hours">
-    <span><%= l(:field_estimated_hours) %> <strong class="js-agile-estimated"><%= flow_hours_label(issue.respond_to?(:estimated_hours) ? issue.estimated_hours : 0) %></strong></span>
-    <span><%= l(:label_spent_time) %> <strong class="js-agile-spent"><%= flow_hours_label(issue.respond_to?(:spent_hours) ? issue.spent_hours : 0) %></strong></span>
-  </div>
+  <% if @settings.board_show_hours? %>
+    <div class="flow-card-hours">
+      <span title="<%= l(:field_estimated_hours) %>">Est. <strong class="js-agile-estimated"><%= flow_hours_label(issue.respond_to?(:estimated_hours) ? issue.estimated_hours : 0) %></strong></span>
+      <span title="<%= l(:label_spent_time) %>">Passé <strong class="js-agile-spent"><%= flow_hours_label(issue.respond_to?(:spent_hours) ? issue.spent_hours : 0) %></strong></span>
+    </div>
+  <% end %>
 
-  <% if assignee_editable || done_ratio_editable %>
+  <% if @settings.board_quick_actions? && (assignee_editable || done_ratio_editable) %>
     <div class="flow-card-actions">
       <% if assignee_editable %>
         <button type="button"
                 class="button-small"
                 data-flow-quick-update="true"
-                data-update-url="<%= project_agile_board_issue_path(@project, issue) %>"
+                data-update-url="<%= flow_agile_board_issue_path_for(issue, @project) %>"
                 data-update-payload="<%= payload_me %>">
           <%= l(:button_flow_assign_me) %>
         </button>
@@ -98,7 +115,7 @@
         <button type="button"
                 class="button-small"
                 data-flow-quick-update="true"
-                data-update-url="<%= project_agile_board_issue_path(@project, issue) %>"
+                data-update-url="<%= flow_agile_board_issue_path_for(issue, @project) %>"
                 data-update-payload="<%= payload_done %>">
           <%= l(:button_flow_mark_done) %>
         </button>

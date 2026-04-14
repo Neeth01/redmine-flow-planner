@@ -5,6 +5,7 @@ module PlanningGanttsHelper
     classes = ['planning-row']
     classes << 'is-closed' if issue.closed?
     classes << 'is-overdue' if issue.overdue?
+    classes << 'is-checklist-blocked' if issue.respond_to?(:flow_checklist_blocked?) && issue.flow_checklist_blocked?
     classes.join(' ')
   end
 

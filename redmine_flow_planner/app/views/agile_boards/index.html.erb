@@ -1,25 +1,31 @@
-<% html_title l(:label_agile_board) %>
+<% board_title = flow_global_mode? ? l(:label_flow_global_agile_board) : l(:label_agile_board) %>
+<% html_title board_title %>
 
 <% content_for :header_tags do %>
   <%= stylesheet_link_tag 'redmine_flow_planner', plugin: 'redmine_flow_planner' %>
   <%= javascript_include_tag 'redmine_flow_planner', plugin: 'redmine_flow_planner' %>
 <% end %>
 
-<div class="flow-shell"
+<div class="<%= flow_shell_classes(@settings) %>"
+     style="<%= flow_shell_style(@settings) %>"
      data-flow-saved-message="<%= l(:notice_successful_update) %>"
      data-flow-error-message="<%= l(:text_flow_network_error) %>"
      data-flow-failure-message="<%= l(:text_flow_save_failed) %>"
      data-flow-storage-key="board:<%= @project&.identifier || 'global' %>"
      data-flow-unassigned-label="<%= l(:label_flow_unassigned) %>"
-     data-flow-board-empty-group="<%= l(:label_none) %>">
+     data-flow-board-empty-group="<%= l(:label_none) %>"
+      data-flow-board-default-group="<%= @settings.board_default_grouping %>"
+      data-flow-board-inline-edit="<%= @settings.board_inline_edit? %>">
   <div class="flow-page-header">
     <div>
-      <h2><%= l(:label_agile_board) %></h2>
-      <p class="flow-muted"><%= l(:text_agile_board_summary, count: @issue_count) %></p>
+      <h2><%= board_title %></h2>
+      <p class="flow-muted">
+        <%= flow_global_mode? ? l(:text_flow_global_agile_board_summary, count: @issue_count, projects: @filter_options[:projects].size) : l(:text_agile_board_summary, count: @issue_count) %>
+      </p>
     </div>
     <div class="flow-actions">
-      <%= link_to l(:label_issue_plural), project_issues_path(@project, flow_query_params), class: 'icon icon-issue' %>
-      <%= link_to l(:button_clear), project_agile_board_path(@project, set_filter: 1), class: 'icon icon-clear-query' %>
+      <%= link_to l(:label_issue_plural), flow_issues_path_for(@project, flow_query_params), class: 'icon icon-issue' %>
+      <%= link_to l(:button_clear), flow_agile_board_path_for(@project, set_filter: 1), class: 'icon icon-clear-query' %>
     </div>
   </div>
 
@@ -34,55 +40,69 @@
   <% end %>
 
   <% if @truncated %>
-    <p class="warning"><%= l(:text_agile_board_truncated, count: @issues.size, total: @issue_count) %></p>
+    <p class="warning"><%= l(:text_agile_board_truncated, count: @issues.size, total: @query_total) %></p>
   <% end %>
 
   <section class="flow-panel flow-panel--compact">
     <div class="flow-toolbar-grid flow-toolbar-grid--dense">
-      <div class="flow-toolbar-row">
-        <%= form_tag project_agile_board_path(@project), method: :get, class: 'flow-inline-form flow-inline-form--compact' do %>
-          <%= query_as_hidden_field_tags(@query) %>
-          <label for="board_sort"><%= l(:label_flow_board_sort) %></label>
-          <%= select_tag :sort,
-                         options_for_select(@board_sort_options, @board_sort),
-                         id: 'board_sort',
-                         onchange: 'this.form.submit();' %>
-        <% end %>
-
-        <div class="flow-local-filters flow-local-filters--inline" data-flow-board-filters="true">
-          <input type="search"
-                 class="flow-input"
-                 placeholder="<%= l(:text_flow_search_placeholder) %>"
-                 data-flow-filter-search="true">
-
-          <%= select_tag :board_tracker_filter,
-                         options_for_select([[l(:label_flow_all_trackers), '']] + @filter_options[:trackers].map {|tracker| [tracker.name, tracker.id]}),
-                         include_blank: false,
-                         data: {flow_filter_tracker: true} %>
-
-          <%= select_tag :board_assignee_filter,
-                         options_for_select([[l(:label_flow_all_assignees), '']] + @filter_options[:assignees].map {|assignee| [assignee.name, assignee.id]}),
-                         include_blank: false,
-                         data: {flow_filter_assignee: true} %>
-
-          <%= select_tag :board_group_by,
-                         options_for_select([
-                           [l(:label_flow_group_none), ''],
-                           [l(:label_flow_group_assignee), 'assignee'],
-                           [l(:label_flow_group_tracker), 'tracker'],
-                           [l(:label_flow_group_priority), 'priority'],
-                           [l(:label_flow_group_version), 'version']
-                         ]),
-                         include_blank: false,
-                         data: {flow_board_grouping: true} %>
-
-          <label class="flow-check"><input type="checkbox" data-flow-filter-overdue="true"> <%= l(:label_flow_overdue) %></label>
-          <label class="flow-check"><input type="checkbox" data-flow-filter-unassigned="true"> <%= l(:label_flow_unassigned) %></label>
-          <label class="flow-check"><input type="checkbox" data-flow-hide-empty="true"> <%= l(:label_flow_hide_empty_columns) %></label>
-          <button type="button" class="button-small" data-flow-reset-filters="true"><%= l(:button_clear) %></button>
+      <div class="flow-toolbar-row flow-toolbar-row--clustered">
+        <div class="flow-toolbar-cluster flow-toolbar-cluster--settings">
+          <%= form_tag flow_agile_board_path_for(@project), method: :get, class: 'flow-inline-form flow-inline-form--compact' do %>
+            <%= query_as_hidden_field_tags(@query) %>
+            <label for="board_sort"><%= l(:label_flow_board_sort) %></label>
+            <%= select_tag :sort,
+                           options_for_select(@board_sort_options, @board_sort),
+                           id: 'board_sort',
+                           onchange: 'this.form.submit();' %>
+          <% end %>
         </div>
 
-        <button type="button" class="button-small" data-flow-fullscreen-toggle="true" data-flow-fullscreen-target=".flow-board"><%= l(:button_flow_fullscreen) %></button>
+        <div class="flow-toolbar-cluster flow-toolbar-cluster--filters">
+          <div class="flow-local-filters flow-local-filters--inline" data-flow-board-filters="true">
+            <input type="search"
+                   class="flow-input"
+                   placeholder="<%= l(:text_flow_search_placeholder) %>"
+                   data-flow-filter-search="true">
+
+            <%= select_tag :board_tracker_filter,
+                           options_for_select([[l(:label_flow_all_trackers), '']] + @filter_options[:trackers].map {|tracker| [tracker.name, tracker.id]}),
+                           include_blank: false,
+                           data: {flow_filter_tracker: true} %>
+
+            <%= select_tag :board_assignee_filter,
+                           options_for_select([[l(:label_flow_all_assignees), '']] + @filter_options[:assignees].map {|assignee| [assignee.name, assignee.id]}),
+                           include_blank: false,
+                           data: {flow_filter_assignee: true} %>
+
+            <% if flow_global_mode? %>
+              <%= select_tag :board_project_filter,
+                             options_for_select([[l(:label_flow_all_projects), '']] + @filter_options[:projects].map {|project| [project.name, project.id]}),
+                             include_blank: false,
+                             data: {flow_filter_project: true} %>
+            <% end %>
+
+            <%= select_tag :board_group_by,
+                           options_for_select([
+                             [l(:label_flow_group_none), ''],
+                             [l(:label_flow_group_assignee), 'assignee'],
+                             [l(:label_flow_group_tracker), 'tracker'],
+                             [l(:label_flow_group_priority), 'priority'],
+                             [l(:label_flow_group_version), 'version'],
+                             [l(:label_project), 'project']
+                           ]),
+                           include_blank: false,
+                           data: {flow_board_grouping: true} %>
+
+            <label class="flow-check"><input type="checkbox" data-flow-filter-overdue="true"> <%= l(:label_flow_overdue) %></label>
+            <label class="flow-check"><input type="checkbox" data-flow-filter-unassigned="true"> <%= l(:label_flow_unassigned) %></label>
+            <label class="flow-check"><input type="checkbox" data-flow-hide-empty="true"> <%= l(:label_flow_hide_empty_columns) %></label>
+            <button type="button" class="button-small" data-flow-reset-filters="true"><%= l(:button_clear) %></button>
+          </div>
+        </div>
+
+        <div class="flow-toolbar-cluster flow-toolbar-cluster--actions">
+          <button type="button" class="button-small" data-flow-fullscreen-toggle="true" data-flow-fullscreen-target=".flow-board"><%= l(:button_flow_fullscreen) %></button>
+        </div>
       </div>
     </div>
   </section>
@@ -110,7 +130,7 @@
               <% if column[:wip_limit].to_i.positive? %>
                 <span class="flow-wip-badge is-<%= column[:wip_state] %>"><%= column[:wip_limit] %></span>
               <% end %>
-              <% if @can_manage_board %>
+              <% if @project && @can_manage_board && @settings.board_quick_create? %>
                 <button type="button"
                         class="button-small flow-column-add"
                         data-agile-add-toggle="true"
@@ -120,11 +140,11 @@
               <% end %>
             </div>
           </header>
-          <% if @can_manage_board %>
+          <% if @project && @can_manage_board && @settings.board_quick_create? %>
             <div class="flow-column-composer" data-agile-create-panel="true" hidden>
               <form class="flow-column-composer-form"
                     data-agile-create-form="true"
-                    action="<%= project_agile_board_issues_path(@project) %>"
+                    action="<%= flow_agile_board_issues_path_for(@project) %>"
                     method="post">
                 <input type="hidden" name="issue[status_id]" value="<%= column[:status].id %>">
                 <input type="text"

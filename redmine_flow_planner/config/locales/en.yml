@@ -2,6 +2,8 @@ en:
   project_module_flow_planner: Flow Planner
   label_agile_board: Agile Board
   label_planning_gantt: Planning Gantt
+  label_flow_global_agile_board: Global Agile Board
+  label_flow_global_planning_gantt: Global Planning Gantt
   label_flow_unscheduled_issues: Unscheduled issues
   label_flow_board_limit: Agile board issue limit
   label_flow_board_sort: Agile board sorting
@@ -39,6 +41,41 @@ en:
   label_flow_issue_bar: Issue bar
   label_flow_version_marker: Version marker
   label_flow_dependency_line: Dependency line
+  label_flow_settings_title: Advanced Flow Planner settings
+  label_flow_settings_operations: Delivery controls
+  label_flow_settings_style: Appearance and visual comfort
+  label_flow_settings_default_scale: Default gantt scale
+  label_flow_settings_default_grouping: Default board grouping
+  label_flow_settings_column_width: Agile column width
+  label_flow_settings_board_quick_create: Allow quick creation from a column
+  label_flow_settings_board_inline_edit: Allow quick editing with double-click
+  label_flow_settings_board_quick_actions: Show quick actions on cards
+  label_flow_settings_board_hours: Show estimated and spent hours on cards
+  label_flow_settings_board_versions: Show version badges on cards
+  label_flow_settings_gantt_relations: Show dependencies by default
+  label_flow_settings_gantt_legend: Show the legend below the gantt
+  label_flow_settings_gantt_unscheduled: Show the unscheduled issues panel
+  label_flow_settings_gantt_editor: Show the quick issue editor
+  label_flow_settings_checklists: Checklists
+  label_flow_settings_checklist_summary: Show checklist summaries on board cards and gantt rows
+  label_flow_settings_checklist_enforce_completion: Prevent closing an issue while required checklist items remain open
+  label_flow_settings_checklist_auto_templates: Auto-apply checklist templates when new issues are created
+  label_flow_settings_density: Display density
+  label_flow_settings_density_comfortable: Comfortable
+  label_flow_settings_density_compact: Compact
+  label_flow_settings_panel_radius: Panel radius
+  label_flow_settings_card_radius: Card radius
+  label_flow_settings_accent_color: Main accent color
+  label_flow_settings_accent_soft_color: Secondary accent color
+  label_flow_settings_gantt_start_color: Gantt bar start color
+  label_flow_settings_gantt_end_color: Gantt bar end color
+  label_flow_settings_gantt_closed_start_color: Closed issue start color
+  label_flow_settings_gantt_closed_end_color: Closed issue end color
+  label_flow_settings_gantt_relation_color: Standard dependency color
+  label_flow_settings_gantt_today_color: Today marker color
+  label_flow_settings_gantt_marker_color: Version marker color
+  label_flow_settings_weekend_tint_color: Weekend tint color
+  label_flow_settings_preview: Quick preview
   label_flow_quick_guide: Quick guide
   label_flow_show_dependencies: Show dependencies
   label_flow_show_baselines: Show session baseline
@@ -69,10 +106,43 @@ en:
   label_flow_export_csv: Export CSV
   label_flow_edit_selected_issue: Edit selected issue
   label_flow_plan_issue: Quick planner
+  label_flow_checklist: Checklist
+  label_flow_checklist_templates: Checklist templates
+  label_flow_checklist_template_new: New template
+  label_flow_checklist_template_edit: Edit template
+  label_flow_checklist_template_library: Template library
+  label_flow_checklist_template_items: Template items
+  label_flow_checklist_select_template: Select a template
+  label_flow_all_projects: All projects
+  label_flow_template_active: Active template
+  label_flow_template_inactive: Inactive
+  label_flow_checklist_blocked: Checklist blocked
+  label_flow_checklist_complete: Checklist complete
+  label_flow_checklist_done: Done
+  label_flow_checklist_remaining: Remaining
+  label_flow_checklist_required: Required
+  label_flow_checklist_mandatory: Required item
+  label_flow_checklist_empty: No checklist
+  label_flow_dashboard: Dashboard
+  label_flow_home_projects: Visible projects
+  label_flow_home_open_issues: Open issues
+  label_flow_home_assigned_issues: Assigned issues
+  label_flow_home_overdue_issues: Overdue issues
+  label_flow_home_scheduled_issues: Scheduled issues
+  label_flow_home_priority: Current priorities
+  label_flow_home_global_tools: Global planning
+  label_flow_home_active_projects: Active projects
+  label_flow_home_recent_activity: Recent updates
+  label_flow_home_open_board: Open the board
+  label_flow_home_open_planning: Open the timeline
+  label_flow_checklist_progress_compact: "Checklist %{completed}/%{total}"
+  label_flow_checklist_required_compact: "Required %{completed}/%{total}"
   permission_view_agile_board: View agile board
   permission_manage_agile_board: Move cards and run quick updates on the agile board
   permission_view_planning_gantt: View planning gantt
   permission_manage_planning_gantt: Reschedule issues on the planning gantt
+  permission_view_flow_checklists: View issue checklists
+  permission_manage_flow_checklists: Manage issue checklists
   button_flow_assign_me: Assign to me
   button_flow_mark_done: Mark 100%
   button_flow_undo: Undo last move
@@ -83,12 +153,16 @@ en:
   button_flow_add_issue: Add issue
   button_flow_fullscreen: Fullscreen
   button_flow_plan_issue: Plan issue
+  button_flow_checklist_add_item: Add item
+  button_flow_apply_template: Apply template
   button_flow_collapse_all: Collapse all
   button_flow_expand_all: Expand all
   text_agile_board_summary: "%{count} issues loaded from the current query."
+  text_flow_global_agile_board_summary: "%{count} issues loaded across %{projects} visible projects."
   text_agile_board_truncated: "Showing %{count} issues on the board out of %{total}. Increase the board limit in plugin settings if needed."
   text_agile_board_empty: "No issue matches the current query."
   text_planning_gantt_summary: "%{count} scheduled issues are visible in the current planning window (%{total} issues in the query)."
+  text_flow_global_planning_gantt_summary: "%{count} scheduled issues visible across %{projects} loaded projects (%{total} issues available in the view)."
   text_planning_gantt_truncated: "Showing %{count} issues in the planner out of %{total}. Increase the planner limit in plugin settings if needed."
   text_planning_gantt_outside_window: "%{count} scheduled issues are outside the visible planning window."
   text_planning_gantt_empty: "No scheduled issue is visible in the current planning window."
@@ -126,3 +200,62 @@ en:
   text_flow_due_today: "Today"
   text_flow_due_tomorrow: "Tomorrow"
   text_flow_due_soon: "In %{count} days"
+  text_flow_settings_intro: "Use this page to tune both plugin behavior and the visual rendering of the Agile and Gantt screens without editing the code."
+  text_flow_settings_operations_hint: "These options define how much data is loaded, how the views open by default and which planning tools are available."
+  text_flow_settings_board_hint: "Adapt the board to the level of detail and interaction your team expects during daily delivery work."
+  text_flow_settings_gantt_hint: "Control what is visible by default in the interactive gantt and which planning helpers are exposed to managers."
+  text_flow_settings_checklists_hint: "These settings control checklist visibility in planning views and optional blocking when an issue is closed."
+  text_flow_checklist_templates_summary: "%{count} templates available to preload consistent checklists."
+  text_flow_checklist_template_help: "Build a reusable library of checklist items. One line = one item. Prefix a line with ! or [required] to make it mandatory."
+  text_flow_checklist_template_items_help: "One item per line. Prefix a line with ! if the item is required."
+  text_flow_checklist_template_library_hint: "Templates can be global or targeted by project and/or tracker. The most specific ones apply together without duplicating existing checklist items."
+  text_flow_checklist_template_more_items: "+ %{count} more item(s)"
+  text_flow_checklist_templates_empty: "No checklist template has been defined yet."
+  text_flow_checklist_templates_migration_required: "The checklist templates table does not exist yet. Run the plugin migration and reload this page."
+  text_flow_checklist_template_delete_confirm: "Delete template '%{name}'?"
+  text_flow_home_headline: "A more useful entry point to steer the instance"
+  text_flow_home_summary: "%{projects} visible projects, %{issues} open issues and direct access to the main planning views."
+  text_flow_home_priority_hint: "What needs attention now, with priority given to assigned work and close due dates."
+  text_flow_home_global_tools_hint: "The plugin's consolidated views to keep control of the whole instance."
+  text_flow_home_active_projects_hint: "Recently touched projects with a quick view of the remaining open work."
+  text_flow_home_recent_activity_hint: "The latest updated issues so you can recover context quickly."
+  text_flow_home_shortcut_my_page: "Open your personal blocks and shortcuts."
+  text_flow_home_shortcut_projects: "Browse the active workspaces directly."
+  text_flow_home_shortcut_issues: "Open the complete visible issue list."
+  text_flow_home_shortcut_activity: "Review recent changes across the instance."
+  text_flow_home_shortcut_global_agile: "Steer all project issues in one board view."
+  text_flow_home_shortcut_global_gantt: "Read the consolidated schedule across projects."
+  text_flow_home_shortcut_templates: "Manage the checklist template library."
+  text_flow_home_shortcut_admin: "Open Redmine global settings."
+  text_flow_home_templates_ready: "%{count} active checklist template(s) ready to preload issues."
+  text_flow_home_templates_pending: "Checklist templates are not available on this instance yet."
+  text_flow_home_project_open_issues: "%{count} open issue(s)"
+  text_flow_home_no_priority: "No priority issue is visible right now."
+  text_flow_home_no_projects: "No visible project."
+  text_flow_home_no_recent: "No recent update is visible."
+  text_flow_settings_style_hint: "These options affect the plugin screens directly, including gantt colors and visual density."
+  text_flow_settings_preview_hint: "The preview helps validate colors and radius choices before saving."
+  text_flow_setting_board_limit_help: "Higher limits show more issues but can make the board heavier on large projects."
+  text_flow_setting_planner_limit_help: "Increase this value if the planner must cover a larger set of scheduled issues."
+  text_flow_checklist_summary: "%{completed}/%{total} item(s) done, %{pending} remaining."
+  text_flow_checklist_empty: "No checklist item on this issue yet."
+  text_flow_checklist_subject_required: "The checklist item text is required."
+  text_flow_checklist_template_required: "Choose a checklist template."
+  text_flow_checklist_templates_unavailable: "No checklist template is available."
+  text_flow_checklist_template_not_found: "The selected template could not be found."
+  text_flow_checklist_template_applied: "Template '%{template}' applied: %{count} item(s) added."
+  text_flow_checklist_template_applied_nothing: "Template '%{template}' did not add any new item."
+  text_flow_checklist_new_item_placeholder: "Add an execution, review or validation step"
+  text_flow_checklist_delete_confirm: "Delete this checklist item?"
+  text_flow_checklist_drag_hint: "Drag to reorder the checklist"
+  text_flow_checklist_done_by: "Done by %{user} on %{time}"
+  text_flow_checklist_invalid_reorder: "The new checklist order is invalid."
+  text_flow_checklist_journal_item_added: "Checklist: added '%{subject}'"
+  text_flow_checklist_journal_item_removed: "Checklist: removed '%{subject}'"
+  text_flow_checklist_journal_item_done: "Checklist: checked '%{subject}'"
+  text_flow_checklist_journal_item_reopened: "Checklist: reopened '%{subject}'"
+  text_flow_checklist_journal_item_renamed: "Checklist: renamed '%{before}' to '%{after}'"
+  text_flow_checklist_journal_item_updated: "Checklist: updated '%{subject}'"
+  text_flow_checklist_journal_reordered: "Checklist: reordered items"
+  text_flow_checklist_journal_template_applied: "Checklist: applied template '%{template}' (%{count} item(s) added)"
+  error_flow_checklist_incomplete_required: "Required checklist items are still open on this issue."

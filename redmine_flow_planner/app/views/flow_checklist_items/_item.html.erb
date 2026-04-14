@@ -1,0 +1,62 @@
+<li class="flow-checklist-item <%= 'is-done' if item.done? %> <%= 'is-mandatory' if item.mandatory? %>"
+    data-flow-checklist-item="true"
+    data-item-id="<%= item.id %>"
+    data-update-url="<%= issue_flow_checklist_item_path(issue, item) %>"
+    data-destroy-url="<%= issue_flow_checklist_item_path(issue, item) %>"
+    draggable="<%= can_manage_checklist %>">
+  <div class="flow-checklist-item-main">
+    <% if can_manage_checklist %>
+      <button type="button"
+              class="flow-checklist-drag"
+              data-flow-checklist-drag="true"
+              title="<%= l(:text_flow_checklist_drag_hint) %>">
+        <span aria-hidden="true">::</span>
+      </button>
+    <% end %>
+
+    <label class="flow-checklist-toggle">
+      <input type="checkbox"
+             data-flow-checklist-toggle="true"
+             <%= 'checked' if item.done? %>
+             <%= 'disabled' unless can_manage_checklist %>>
+      <span class="flow-checklist-item-subject"><%= item.subject %></span>
+    </label>
+
+    <div class="flow-checklist-item-side">
+      <% if item.mandatory? %>
+        <span class="flow-checklist-badge is-required"><%= l(:label_flow_checklist_mandatory) %></span>
+      <% end %>
+
+      <% if item.done? %>
+        <span class="flow-checklist-item-meta">
+          <%= l(:text_flow_checklist_done_by, user: item.done_by&.name || l(:label_user_anonymous), time: format_time(item.done_at)) %>
+        </span>
+      <% end %>
+
+      <% if can_manage_checklist %>
+        <button type="button" class="icon icon-edit icon-only" data-flow-checklist-edit-toggle="true" title="<%= l(:button_edit) %>"></button>
+        <button type="button" class="icon icon-del icon-only" data-flow-checklist-delete="true" title="<%= l(:button_delete) %>"></button>
+      <% end %>
+    </div>
+  </div>
+
+  <% if can_manage_checklist %>
+    <form class="flow-checklist-edit is-hidden" data-flow-checklist-edit-form="true">
+      <div class="flow-checklist-compose-grid">
+        <input type="text"
+               name="item[subject]"
+               class="flow-checklist-input"
+               value="<%= item.subject %>"
+               required>
+        <label class="flow-checklist-flag">
+          <input type="checkbox" name="item[mandatory]" value="1" <%= 'checked' if item.mandatory? %>>
+          <span><%= l(:label_flow_checklist_mandatory) %></span>
+        </label>
+      </div>
+      <div class="flow-checklist-compose-actions">
+        <button type="submit" class="button-small"><%= l(:button_save) %></button>
+        <button type="button" class="button-small" data-flow-checklist-edit-cancel="true"><%= l(:button_cancel) %></button>
+      </div>
+    </form>
+  <% end %>
+</li>

@@ -1,0 +1,139 @@
+<% html_title l(:label_flow_checklist_templates) %>
+<% templates_table_available = @templates_table_available != false %>
+<% template_projects = @template_projects || [] %>
+<% template_trackers = @template_trackers || [] %>
+
+<% content_for :header_tags do %>
+  <%= stylesheet_link_tag 'redmine_flow_planner', plugin: 'redmine_flow_planner' %>
+<% end %>
+
+<div class="<%= flow_shell_classes(@settings) %>" style="<%= flow_shell_style(@settings) %>">
+  <div class="flow-page-header">
+    <div>
+      <h2><%= l(:label_flow_checklist_templates) %></h2>
+      <p class="flow-muted"><%= l(:text_flow_checklist_templates_summary, count: @templates.size) %></p>
+    </div>
+  </div>
+
+  <div class="flow-utility-grid">
+    <section class="flow-panel">
+      <div class="flow-panel-header">
+        <div>
+          <h3><%= @template&.persisted? ? l(:label_flow_checklist_template_edit) : l(:label_flow_checklist_template_new) %></h3>
+          <p class="flow-muted"><%= l(:text_flow_checklist_template_help) %></p>
+        </div>
+      </div>
+
+      <div class="flow-panel-body">
+        <% unless templates_table_available %>
+          <div class="flow-message is-error">
+            <%= l(:text_flow_checklist_templates_migration_required) %>
+          </div>
+        <% end %>
+
+        <% if templates_table_available && @template.present? %>
+          <%= form_with model: @template, local: true do |form| %>
+            <% if @template.errors.any? %>
+              <div class="flow-message is-error">
+                <%= @template.errors.full_messages.join(', ') %>
+              </div>
+            <% end %>
+
+            <fieldset class="flow-toolbar-grid">
+              <label class="flow-field">
+                <span><%= l(:field_name) %></span>
+                <%= form.text_field :name, class: 'flow-input', required: true %>
+              </label>
+
+              <label class="flow-field">
+                <span><%= l(:label_project) %></span>
+                <%= form.select :project_id,
+                                options_for_select([[l(:label_flow_all_projects), '']] + template_projects.map {|project| [project.name, project.id]}, @template.project_id),
+                                {},
+                                class: 'flow-input' %>
+              </label>
+
+              <label class="flow-field">
+                <span><%= l(:label_tracker) %></span>
+                <%= form.select :tracker_id,
+                                options_for_select([[l(:label_flow_all_trackers), '']] + template_trackers.map {|tracker| [tracker.name, tracker.id]}, @template.tracker_id),
+                                {},
+                                class: 'flow-input' %>
+              </label>
+
+              <label class="flow-check">
+                <%= form.check_box :active %>
+                <span><%= l(:label_flow_template_active) %></span>
+              </label>
+
+              <label class="flow-field flow-field--wide">
+                <span><%= l(:label_flow_checklist_template_items) %></span>
+                <%= form.text_area :items_raw, class: 'flow-input', rows: 8, required: true %>
+                <small class="flow-muted"><%= l(:text_flow_checklist_template_items_help) %></small>
+              </label>
+            </fieldset>
+
+            <div class="flow-card-actions">
+              <%= form.submit @template.persisted? ? l(:button_save) : l(:button_add), class: 'button-small' %>
+              <% if @template.persisted? %>
+                <%= link_to l(:button_cancel), flow_checklist_templates_path, class: 'button-small' %>
+              <% end %>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    </section>
+
+    <section class="flow-panel">
+      <div class="flow-panel-header">
+        <div>
+          <h3><%= l(:label_flow_checklist_template_library) %></h3>
+          <p class="flow-muted"><%= l(:text_flow_checklist_template_library_hint) %></p>
+        </div>
+      </div>
+
+      <div class="flow-panel-body">
+        <% if @templates.any? %>
+          <div class="flow-admin-template-list">
+            <% @templates.each do |template| %>
+              <article class="flow-admin-template-card">
+                <div class="flow-admin-template-main">
+                  <div class="flow-admin-template-top">
+                    <strong><%= template.name %></strong>
+                    <% unless template.active? %>
+                      <span class="flow-mini-badge is-soft"><%= l(:label_flow_template_inactive) %></span>
+                    <% end %>
+                  </div>
+                  <div class="flow-admin-template-scope"><%= template.display_scope %></div>
+                  <ul class="flow-admin-template-items">
+                    <% template.parsed_items.first(6).each do |item| %>
+                      <li>
+                        <% if item[:mandatory] %>
+                          <span class="flow-mini-badge is-alert"><%= l(:label_flow_checklist_mandatory) %></span>
+                        <% end %>
+                        <span><%= item[:subject] %></span>
+                      </li>
+                    <% end %>
+                  </ul>
+                  <% if template.parsed_items.size > 6 %>
+                    <div class="flow-muted"><%= l(:text_flow_checklist_template_more_items, count: template.parsed_items.size - 6) %></div>
+                  <% end %>
+                </div>
+                <div class="flow-card-actions">
+                  <%= link_to l(:button_edit), edit_flow_checklist_template_path(template), class: 'button-small' %>
+                  <%= link_to l(:button_delete),
+                              flow_checklist_template_path(template),
+                              method: :delete,
+                              data: {confirm: l(:text_flow_checklist_template_delete_confirm, name: template.name)},
+                              class: 'button-small' %>
+                </div>
+              </article>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="nodata"><%= l(:text_flow_checklist_templates_empty) %></p>
+        <% end %>
+      </div>
+    </section>
+  </div>
+</div>

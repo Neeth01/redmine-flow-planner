@@ -1,9 +1,10 @@
 # Redmine Flow Planner
 
-`redmine_flow_planner` est un plugin Redmine `6.1.2` centre sur deux usages:
+`redmine_flow_planner` est un plugin Redmine `6.1.2` centre sur trois usages:
 
 - suivre le travail au quotidien avec un tableau agile manipulable
 - replanifier les tickets avec un Gantt interactif en drag-and-drop
+- executer et securiser le travail avec une checklist native sur les tickets
 
 Le plugin s'installe directement dans `plugins/redmine_flow_planner` et reutilise la logique native de Redmine:
 
@@ -13,7 +14,7 @@ Le plugin s'installe directement dans `plugins/redmine_flow_planner` et reutilis
 - `safe_attributes`
 - journaux (`journals`)
 
-Il n'ajoute pas de modele metier parallele.
+La seule couche metier ajoutee concerne les points de checklist associes aux tickets.
 
 ## Ecrans ajoutes
 
@@ -54,6 +55,14 @@ Ces vues se basent sur la requete d'issues courante. Les filtres Redmine restent
 - tickets sans dates listes a part
 - editeur rapide du ticket selectionne
 - filtres locaux rapides par recherche, tracker, assigne, retard et non assigne
+
+### Checklists de tickets
+
+- checklist native sur la fiche ticket
+- ajout, edition, suppression et reorganisation des points
+- points obligatoires pour representer les bloqueurs de livraison
+- resume checklist visible sur les cartes Agile et les lignes Gantt
+- blocage optionnel de la fermeture d'un ticket si des points obligatoires restent ouverts
 
 ## Compatibilite
 
@@ -106,12 +115,14 @@ dans:
 
 ## Permissions
 
-Le plugin utilise quatre permissions:
+Le plugin utilise six permissions:
 
 - `view_agile_board`
 - `manage_agile_board`
 - `view_planning_gantt`
 - `manage_planning_gantt`
+- `view_flow_checklists`
+- `manage_flow_checklists`
 
 Usage recommande:
 
@@ -129,6 +140,8 @@ Dans `Administration -> Plugins -> Redmine Flow Planner -> Configure`:
 - `Planner issue limit`
 - `Default planner months`
 - `Planner day width in pixels`
+- `Checklist summaries on board/gantt`
+- `Prevent closing when required checklist items remain open`
 
 ### Format des limites WIP
 
@@ -172,11 +185,18 @@ Fichiers principaux:
 - `init.rb`
 - `config/routes.rb`
 - `app/controllers/agile_boards_controller.rb`
+- `app/controllers/flow_checklist_items_controller.rb`
 - `app/controllers/planning_gantts_controller.rb`
+- `app/models/flow_checklist_item.rb`
+- `app/views/flow_checklist_items/`
 - `app/views/agile_boards/`
 - `app/views/planning_gantts/`
+- `assets/javascripts/redmine_flow_checklists.js`
+- `assets/stylesheets/redmine_flow_checklists.css`
 - `assets/javascripts/redmine_flow_planner.js`
 - `assets/stylesheets/redmine_flow_planner.css`
+- `lib/redmine_flow_planner/issue_patch.rb`
+- `lib/redmine_flow_planner/hooks.rb`
 - `lib/redmine_flow_planner/settings.rb`
 - `lib/redmine_flow_planner/timeline.rb`
 
@@ -192,11 +212,13 @@ Fichiers principaux:
 Tests inclus:
 
 - `test/functional/agile_boards_controller_test.rb`
+- `test/functional/flow_checklist_items_controller_test.rb`
 - `test/functional/planning_gantts_controller_test.rb`
 
 Exemple:
 
 ```bash
 RAILS_ENV=test bundle exec rake test TEST=plugins/redmine_flow_planner/test/functional/agile_boards_controller_test.rb
+RAILS_ENV=test bundle exec rake test TEST=plugins/redmine_flow_planner/test/functional/flow_checklist_items_controller_test.rb
 RAILS_ENV=test bundle exec rake test TEST=plugins/redmine_flow_planner/test/functional/planning_gantts_controller_test.rb
 ```

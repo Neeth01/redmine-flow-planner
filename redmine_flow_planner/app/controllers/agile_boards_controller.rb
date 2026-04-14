@@ -14,9 +14,10 @@ class AgileBoardsController < ApplicationController
   menu_item :agile_board
 
   before_action :find_optional_project
-  before_action :authorize
+  before_action :authorize_board_view!
   before_action :ensure_project!, only: :create_issue
   before_action :find_issue_for_update, only: :update_issue
+  before_action :authorize_board_manage!, only: [:create_issue, :update_issue]
 
   helper :issues
   helper :projects
@@ -32,21 +33,24 @@ class AgileBoardsController < ApplicationController
     @settings = RedmineFlowPlanner.settings
     retrieve_query(IssueQuery, true)
     @query.group_by = nil if @query
-    @issue_count = @query.issue_count
+    @query_total = @query.issue_count
     @board_sort = params[:sort].presence
     @board_sort = @settings.board_default_sort unless BOARD_SORTS.include?(@board_sort)
-    @issues = @query.issues(
-      limit: @settings.board_limit,
+    raw_issues = @query.issues(
+      limit: query_limit,
       include: [:tracker, :assigned_to, :priority, :fixed_version, :author]
     )
-    @truncated = @issue_count > @issues.size
+    authorized_issues = filter_authorized_issues(raw_issues)
+    @issues = authorized_issues.first(@settings.board_limit)
+    @issue_count = @issues.size
+    @truncated = authorized_issues.size > @issues.size || @query_total > @issues.size
     @statuses = board_statuses(@issues)
     @wip_limits = @settings.board_wip_limits_for(@statuses)
     @board_columns = build_board_columns(@statuses, @issues, @board_sort, @wip_limits)
     @board_sort_options = board_sort_options
     @filter_options = filter_collection(@issues)
     @quick_create_options = quick_create_options
-    @can_manage_board = User.current.allowed_to?(:manage_agile_board, @project)
+    @can_manage_board = @issues.any? {|issue| can_manage_board_for?(issue.project)} || can_manage_board_for?(@project)
   rescue ActiveRecord::RecordNotFound
     render_404
   end
@@ -156,6 +160,8 @@ class AgileBoardsController < ApplicationController
       done_ratio: issue.done_ratio,
       overdue: issue.overdue?,
       closed: issue.closed?,
+      project_id: issue.project_id,
+      project_name: issue.project&.name,
       estimated_hours: issue.respond_to?(:estimated_hours) ? issue.estimated_hours.to_f : 0.0,
       spent_hours: issue.respond_to?(:spent_hours) ? issue.spent_hours.to_f : 0.0,
       updated_on: issue.updated_on&.iso8601
@@ -182,6 +188,7 @@ class AgileBoardsController < ApplicationController
 
   def filter_collection(issues)
     {
+      projects: issues.map(&:project).compact.uniq.sort_by(&:name),
       trackers: issues.map(&:tracker).compact.uniq.sort_by(&:name),
       assignees: issues.map(&:assigned_to).compact.uniq.sort_by(&:name)
     }
@@ -249,6 +256,8 @@ class AgileBoardsController < ApplicationController
   end
 
   def quick_create_options
+    return {trackers: [], assignees: [], priorities: [], versions: []} unless @project
+
     {
       trackers: available_trackers.map {|tracker| [tracker.name, tracker.id]},
       assignees: available_assignees.map {|user| [user.name, user.id]},
@@ -280,7 +289,7 @@ class AgileBoardsController < ApplicationController
   end
 
   def available_versions
-    return [] unless @project
+    return @issues.map(&:fixed_version).compact.uniq.sort_by {|version| [version.effective_date || Date.new(9999, 12, 31), version.name.to_s.downcase]} unless @project
 
     project_ids = Project.where('lft >= ? AND rgt <= ?', @project.lft, @project.rgt).pluck(:id)
     Version.where(project_id: project_ids).order(:effective_date, :name).to_a
@@ -297,7 +306,9 @@ class AgileBoardsController < ApplicationController
   end
 
   def ensure_project!
-    render_404 unless @project
+    return if @project
+
+    render_404
   end
 
   def issue_in_scope?(issue)
@@ -305,6 +316,56 @@ class AgileBoardsController < ApplicationController
 
     issue.project_id == @project.id ||
       (issue.project.lft >= @project.lft && issue.project.rgt <= @project.rgt)
+  end
+
+  def authorize_board_view!
+    return if can_view_board_for?(@project)
+    return if @project.blank? && global_board_projects.any?
+
+    raise Unauthorized
+  end
+
+  def authorize_board_manage!
+    scope_project = @issue&.project || @project
+    raise Unauthorized unless can_manage_board_for?(scope_project)
+  end
+
+  def can_view_board_for?(project)
+    return true if User.current.admin?
+    return false if project.blank?
+
+    User.current.allowed_to?(:view_agile_board, project)
+  end
+
+  def can_manage_board_for?(project)
+    return true if User.current.admin?
+    return false if project.blank?
+
+    User.current.allowed_to?(:manage_agile_board, project)
+  end
+
+  def global_board_projects
+    @global_board_projects ||= selectable_projects_for(:view_agile_board)
+  end
+
+  def filter_authorized_issues(issues)
+    Array(issues).select {|issue| can_view_board_for?(issue.project)}
+  end
+
+  def selectable_projects_for(permission)
+    scope = Project.visible
+    scope = scope.has_module(:flow_planner) if scope.respond_to?(:has_module)
+    return scope.order(:name).to_a if User.current.admin?
+
+    scope.order(:name).select {|project| User.current.allowed_to?(permission, project)}
+  rescue StandardError
+    []
+  end
+
+  def query_limit
+    return @settings.board_limit unless @project.blank?
+
+    [@settings.board_limit * 3, 1000].min
   end
 
   def render_bad_request(exception)

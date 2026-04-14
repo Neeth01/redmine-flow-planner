@@ -1,8 +1,140 @@
 # frozen_string_literal: true
 
 module FlowPlannerHelper
+  def flow_shell_classes(settings = nil)
+    classes = ['flow-shell']
+    classes << 'is-compact' if settings&.compact_density?
+    classes.join(' ')
+  end
+
+  def flow_shell_style(settings)
+    return '' unless settings
+
+    {
+      '--flow-accent' => settings.ui_accent_color,
+      '--flow-accent-soft' => settings.ui_accent_soft_color,
+      '--flow-panel-radius' => "#{settings.panel_radius}px",
+      '--flow-card-radius' => "#{settings.card_radius}px",
+      '--flow-column-width' => "#{settings.board_column_width}px",
+      '--flow-gantt-bar-start' => settings.gantt_bar_color_start,
+      '--flow-gantt-bar-end' => settings.gantt_bar_color_end,
+      '--flow-gantt-closed-start' => settings.gantt_closed_bar_color_start,
+      '--flow-gantt-closed-end' => settings.gantt_closed_bar_color_end,
+      '--flow-gantt-relation' => settings.gantt_relation_color,
+      '--flow-gantt-today' => settings.gantt_today_color,
+      '--flow-gantt-marker' => settings.gantt_version_marker_color,
+      '--flow-weekend-tint' => settings.weekend_tint_color
+    }.map {|name, value| "#{name}: #{value}"}.join('; ')
+  end
+
   def flow_query_params
     request.query_parameters.except(:controller, :action, :project_id)
+  end
+
+  def flow_global_mode?(project = @project)
+    project.blank?
+  end
+
+  def flow_agile_board_path_for(project = @project, options = {})
+    if flow_global_mode?(project)
+      global_agile_board_path(options)
+    else
+      project_agile_board_path(project, options)
+    end
+  end
+
+  def flow_agile_board_issue_path_for(issue, project = @project)
+    if flow_global_mode?(project)
+      global_agile_board_issue_path(issue)
+    else
+      project_agile_board_issue_path(project, issue)
+    end
+  end
+
+  def flow_agile_board_issues_path_for(project = @project)
+    return nil if flow_global_mode?(project)
+
+    project_agile_board_issues_path(project)
+  end
+
+  def flow_planning_gantt_path_for(project = @project, options = {})
+    if flow_global_mode?(project)
+      global_planning_gantt_path(options)
+    else
+      project_planning_gantt_path(project, options)
+    end
+  end
+
+  def flow_planning_gantt_issue_path_for(issue, project = @project)
+    if flow_global_mode?(project)
+      global_planning_gantt_issue_path(issue)
+    else
+      project_planning_gantt_issue_path(project, issue)
+    end
+  end
+
+  def flow_issues_path_for(project = @project, options = {})
+    if flow_global_mode?(project)
+      issues_path(options)
+    else
+      project_issues_path(project, options)
+    end
+  end
+
+  def flow_project_label(issue)
+    issue.project&.name
+  end
+
+  def flow_project_palette(project)
+    return unless project
+
+    seed = project.id.to_i
+    seed = project.identifier.to_s.each_byte.sum if seed <= 0
+    seed += project.name.to_s.each_byte.sum
+    hue = (seed * 47) % 360
+
+    {
+      accent: "hsl(#{hue} 62% 48%)",
+      accent_strong: "hsl(#{hue} 58% 28%)",
+      soft: "hsl(#{hue} 88% 96%)",
+      soft_alt: "hsl(#{hue} 82% 92%)",
+      border: "hsl(#{hue} 44% 78%)",
+      bar_start: "hsl(#{hue} 78% 58%)",
+      bar_end: "hsl(#{(hue + 18) % 360} 74% 40%)",
+      bar_glow: "hsla(#{hue} 76% 42% / 0.18)",
+      closed_start: "hsl(#{hue} 32% 58%)",
+      closed_end: "hsl(#{(hue + 16) % 360} 28% 40%)"
+    }
+  end
+
+  def flow_project_style(project)
+    palette = flow_project_palette(project)
+    return '' unless palette
+
+    {
+      '--flow-project-accent' => palette[:accent],
+      '--flow-project-accent-strong' => palette[:accent_strong],
+      '--flow-project-soft' => palette[:soft],
+      '--flow-project-soft-alt' => palette[:soft_alt],
+      '--flow-project-border' => palette[:border],
+      '--flow-project-bar-start' => palette[:bar_start],
+      '--flow-project-bar-end' => palette[:bar_end],
+      '--flow-project-bar-glow' => palette[:bar_glow],
+      '--flow-project-bar-closed-start' => palette[:closed_start],
+      '--flow-project-bar-closed-end' => palette[:closed_end]
+    }.map {|name, value| "#{name}: #{value}"}.join('; ')
+  end
+
+  def flow_issue_manageable_on_board?(issue)
+    User.current.admin? || User.current.allowed_to?(:manage_agile_board, issue.project)
+  rescue StandardError
+    false
+  end
+
+  def flow_issue_manageable_on_planning?(issue)
+    User.current.admin? || User.current.allowed_to?(:manage_planning_gantt, issue.project)
+  rescue StandardError
+    false
   end
 
   def flow_query_filters(query)
@@ -85,6 +217,47 @@ module FlowPlannerHelper
     "#{rounded}h"
   end
 
+  def flow_checklist_stats(issue)
+    if issue.respond_to?(:flow_checklist_stats)
+      stats = issue.flow_checklist_stats
+      return stats if stats[:total].to_i.positive?
+    else
+      stats = nil
+    end
+
+    items = FlowChecklistItem.where(issue_id: issue.id).order(:position, :id).to_a
+    total = items.size
+    completed = items.count(&:done?)
+    required_total = items.count(&:mandatory?)
+    required_completed = items.count {|item| item.mandatory? && item.done?}
+
+    {
+      total: total,
+      completed: completed,
+      pending: total - completed,
+      percent: total.zero? ? 0 : ((completed.to_f / total) * 100).round,
+      required_total: required_total,
+      required_completed: required_completed,
+      blocked: required_total.positive? && required_completed < required_total
+    }
+  rescue StandardError
+    {total: 0, completed: 0, pending: 0, percent: 0, required_total: 0, required_completed: 0, blocked: false}
+  end
+
+  def flow_checklist_summary_label(issue)
+    stats = flow_checklist_stats(issue)
+    return l(:label_flow_checklist_empty) if stats[:total].zero?
+
+    l(:label_flow_checklist_progress_compact, completed: stats[:completed], total: stats[:total])
+  end
+
+  def flow_checklist_required_label(issue)
+    stats = flow_checklist_stats(issue)
+    return nil if stats[:required_total].zero?
+
+    l(:label_flow_checklist_required_compact, completed: stats[:required_completed], total: stats[:required_total])
+  end
+
   def flow_metrics_for(issues, due_soon_days)
     list = Array(issues)
     {
@@ -104,6 +277,7 @@ module FlowPlannerHelper
 
   def flow_filter_collection(issues)
     {
+      projects: Array(issues).map(&:project).compact.uniq.sort_by(&:name),
       trackers: Array(issues).map(&:tracker).compact.uniq.sort_by(&:name),
       assignees: Array(issues).map(&:assigned_to).compact.uniq.sort_by(&:name)
     }

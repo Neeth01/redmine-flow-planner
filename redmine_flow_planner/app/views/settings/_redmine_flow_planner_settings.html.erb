@@ -1,48 +1,678 @@
-<p>
-  <label for="settings_board_limit"><%= l(:label_flow_board_limit) %></label>
-  <%= text_field_tag 'settings[board_limit]', settings['board_limit'], id: 'settings_board_limit', size: 6 %>
-</p>
+<style>
+  .tabular.settings .flow-admin-settings,
+  #content .tabular.settings .flow-admin-settings {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+  }
 
-<p>
-  <label for="settings_board_default_sort"><%= l(:label_flow_board_sort) %></label>
-  <%= select_tag 'settings[board_default_sort]',
-                 options_for_select([
-                   [l(:label_flow_sort_priority), 'priority'],
-                   [l(:label_flow_sort_due_date), 'due_date'],
-                   [l(:label_flow_sort_updated_on), 'updated_on'],
-                   [l(:label_flow_sort_done_ratio), 'done_ratio'],
-                   [l(:label_flow_sort_subject), 'subject'],
-                   [l(:label_flow_sort_id), 'id']
-                 ], settings['board_default_sort']),
-                 id: 'settings_board_default_sort' %>
-</p>
+  .flow-admin-settings {
+    --flow-admin-border: #d7dee8;
+    --flow-admin-muted: #667085;
+    --flow-admin-strong: #1f2937;
+    --flow-admin-accent: #0f5f9c;
+    display: grid;
+    gap: 18px;
+    width: 100%;
+    max-width: 100%;
+    clear: both;
+  }
 
-<p>
-  <label for="settings_board_wip_limits"><%= l(:label_flow_board_wip_limits) %></label>
-  <%= text_area_tag 'settings[board_wip_limits]',
-                    settings['board_wip_limits'],
-                    id: 'settings_board_wip_limits',
-                    rows: 5,
-                    cols: 60 %>
-  <em class="info"><%= l(:text_flow_board_wip_limits_help) %></em>
-</p>
+  .flow-admin-settings *,
+  .flow-admin-settings *::before,
+  .flow-admin-settings *::after {
+    box-sizing: border-box;
+  }
 
-<p>
-  <label for="settings_due_soon_days"><%= l(:label_flow_due_soon_days) %></label>
-  <%= text_field_tag 'settings[due_soon_days]', settings['due_soon_days'], id: 'settings_due_soon_days', size: 6 %>
-</p>
+  .flow-admin-settings::after {
+    content: "";
+    display: block;
+    clear: both;
+  }
 
-<p>
-  <label for="settings_planner_limit"><%= l(:label_flow_planner_limit) %></label>
-  <%= text_field_tag 'settings[planner_limit]', settings['planner_limit'], id: 'settings_planner_limit', size: 6 %>
-</p>
+  .flow-admin-settings p,
+  .flow-admin-settings div,
+  .flow-admin-settings section,
+  .flow-admin-settings label,
+  .flow-admin-settings input,
+  .flow-admin-settings select,
+  .flow-admin-settings textarea,
+  .flow-admin-settings small,
+  .flow-admin-settings em,
+  .flow-admin-settings span {
+    float: none !important;
+    clear: none !important;
+    max-width: 100%;
+  }
 
-<p>
-  <label for="settings_planner_months"><%= l(:label_flow_planner_months) %></label>
-  <%= text_field_tag 'settings[planner_months]', settings['planner_months'], id: 'settings_planner_months', size: 6 %>
-</p>
+  .flow-admin-settings label {
+    display: block;
+    width: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    margin-inline-start: 0 !important;
+    inset-inline-start: auto !important;
+    text-align: left !important;
+  }
 
-<p>
-  <label for="settings_planner_day_width"><%= l(:label_flow_planner_day_width) %></label>
-  <%= text_field_tag 'settings[planner_day_width]', settings['planner_day_width'], id: 'settings_planner_day_width', size: 6 %>
-</p>
+  .flow-admin-settings input,
+  .flow-admin-settings select,
+  .flow-admin-settings textarea {
+    display: block;
+  }
+
+  .flow-admin-settings-intro,
+  .flow-admin-settings-section,
+  .flow-admin-settings-preview {
+    border: 1px solid var(--flow-admin-border);
+    border-radius: 18px;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
+  }
+
+  .flow-admin-settings-intro,
+  .flow-admin-settings-preview {
+    padding: 16px 18px;
+  }
+
+  .flow-admin-settings-section {
+    padding: 16px 18px 18px;
+    overflow: hidden;
+  }
+
+  .flow-admin-settings-title {
+    margin: 0 0 4px;
+    color: var(--flow-admin-strong);
+    font-size: 1.05rem;
+  }
+
+  .flow-admin-settings-subtitle {
+    margin: 0;
+    color: var(--flow-admin-muted);
+  }
+
+  .flow-admin-settings-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 16px;
+    margin-top: 16px;
+    align-items: start;
+  }
+
+  .flow-admin-settings-field {
+    display: grid;
+    gap: 6px;
+    align-content: start;
+    min-width: 0;
+  }
+
+  .flow-admin-settings-field.is-wide {
+    grid-column: 1 / -1;
+  }
+
+  .flow-admin-settings-field label {
+    font-weight: 700;
+    color: var(--flow-admin-strong);
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+
+  .flow-admin-settings-field small,
+  .flow-admin-settings-field em {
+    color: var(--flow-admin-muted);
+    font-style: normal;
+    line-height: 1.45;
+  }
+
+  .flow-admin-settings-field input[type="text"],
+  .flow-admin-settings-field input[type="number"],
+  .flow-admin-settings-field input[type="color"],
+  .flow-admin-settings-field select,
+  .flow-admin-settings-field textarea {
+    width: 100%;
+    min-height: 40px;
+    padding: 8px 10px;
+    border: 1px solid #c9d5e4;
+    border-radius: 12px;
+    background: #ffffff;
+    line-height: 1.35;
+  }
+
+  .flow-admin-settings-field input[type="color"] {
+    padding: 4px 6px;
+  }
+
+  .flow-admin-settings-field textarea {
+    min-height: 120px;
+    resize: vertical;
+  }
+
+  .flow-admin-settings-check {
+    display: grid;
+    grid-template-columns: 16px minmax(0, 1fr);
+    align-items: start;
+    gap: 12px;
+    min-height: 64px;
+    padding: 10px 12px;
+    border: 1px solid #e1e8f0;
+    border-radius: 12px;
+    background: #f8fbff;
+    cursor: pointer;
+  }
+
+  .flow-admin-settings-check input {
+    margin: 2px 0 0;
+    flex: 0 0 auto;
+    width: 16px;
+    height: 16px;
+    min-height: 0;
+  }
+
+  .flow-admin-settings-check span {
+    display: block;
+    min-width: 0;
+    font-weight: 700;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+
+  .flow-admin-settings-preview-grid {
+    display: grid;
+    grid-template-columns: minmax(280px, 1fr) minmax(320px, 1.2fr);
+    gap: 18px;
+    margin-top: 14px;
+  }
+
+  .flow-admin-preview-board,
+  .flow-admin-preview-gantt {
+    padding: 16px;
+    border: 1px solid var(--flow-admin-border);
+    border-radius: 18px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  }
+
+  .flow-admin-preview-board h4,
+  .flow-admin-preview-gantt h4 {
+    margin: 0 0 12px;
+    color: var(--flow-admin-strong);
+  }
+
+  .flow-admin-preview-column {
+    border: 1px solid var(--flow-admin-border);
+    border-radius: var(--preview-panel-radius, 18px);
+    padding: 12px;
+    background: #ffffff;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--preview-accent, #0f5f9c) 10%, white);
+  }
+
+  .flow-admin-preview-card {
+    padding: 12px;
+    border: 1px solid #e5edf6;
+    border-radius: var(--preview-card-radius, 16px);
+    background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.05);
+    border-inline-start: 4px solid var(--preview-accent, #0f5f9c);
+  }
+
+  .flow-admin-preview-card strong,
+  .flow-admin-preview-card span {
+    display: block;
+  }
+
+  .flow-admin-preview-card span + span {
+    margin-top: 6px;
+    color: var(--flow-admin-muted);
+    font-size: 0.88rem;
+  }
+
+  .flow-admin-preview-card strong {
+    color: var(--preview-accent, #0f5f9c);
+  }
+
+  .flow-admin-preview-bar-wrap {
+    padding: 14px;
+    border: 1px solid var(--flow-admin-border);
+    border-radius: var(--preview-panel-radius, 18px);
+    background:
+      repeating-linear-gradient(
+        to right,
+        transparent,
+        transparent 27px,
+        #edf2f7 27px,
+        #edf2f7 28px
+      );
+  }
+
+  .flow-admin-preview-bar {
+    width: 72%;
+    height: 34px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--preview-gantt-start, #155eef) 0%, var(--preview-gantt-end, #0f5f9c) 100%);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    box-shadow: 0 8px 18px rgba(15, 95, 156, 0.18);
+  }
+
+  .flow-admin-preview-bar.is-closed {
+    width: 46%;
+    margin-top: 12px;
+    background: linear-gradient(135deg, var(--preview-gantt-closed-start, #64748b) 0%, var(--preview-gantt-closed-end, #475569) 100%);
+  }
+
+  .flow-admin-preview-marker {
+    width: 3px;
+    height: 22px;
+    margin-top: 12px;
+    background: var(--preview-marker, #f4a261);
+  }
+
+  .flow-admin-preview-relation {
+    width: 90px;
+    height: 3px;
+    margin-top: 12px;
+    background: var(--preview-relation, #0f5f9c);
+  }
+
+  .flow-admin-preview-meta {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 12px;
+    color: var(--flow-admin-muted);
+    font-size: 0.88rem;
+  }
+
+  @media screen and (min-width: 1400px) {
+    .flow-admin-settings-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media screen and (max-width: 899px) {
+    .flow-admin-settings-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .flow-admin-settings-preview-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<div class="flow-admin-settings" data-flow-admin-settings="true">
+  <section class="flow-admin-settings-intro">
+    <h3 class="flow-admin-settings-title"><%= l(:label_flow_settings_title) %></h3>
+    <p class="flow-admin-settings-subtitle"><%= l(:text_flow_settings_intro) %></p>
+  </section>
+
+  <section class="flow-admin-settings-section">
+    <h3 class="flow-admin-settings-title"><%= l(:label_flow_settings_operations) %></h3>
+    <p class="flow-admin-settings-subtitle"><%= l(:text_flow_settings_operations_hint) %></p>
+
+    <div class="flow-admin-settings-grid">
+      <div class="flow-admin-settings-field">
+        <label for="settings_board_limit"><%= l(:label_flow_board_limit) %></label>
+        <%= number_field_tag 'settings[board_limit]', settings['board_limit'], id: 'settings_board_limit', min: 50, max: 1000, step: 10 %>
+        <small><%= l(:text_flow_setting_board_limit_help) %></small>
+      </div>
+
+      <div class="flow-admin-settings-field">
+        <label for="settings_planner_limit"><%= l(:label_flow_planner_limit) %></label>
+        <%= number_field_tag 'settings[planner_limit]', settings['planner_limit'], id: 'settings_planner_limit', min: 50, max: 1000, step: 10 %>
+        <small><%= l(:text_flow_setting_planner_limit_help) %></small>
+      </div>
+
+      <div class="flow-admin-settings-field">
+        <label for="settings_due_soon_days"><%= l(:label_flow_due_soon_days) %></label>
+        <%= number_field_tag 'settings[due_soon_days]', settings['due_soon_days'], id: 'settings_due_soon_days', min: 1, max: 90 %>
+      </div>
+
+      <div class="flow-admin-settings-field">
+        <label for="settings_planner_months"><%= l(:label_flow_planner_months) %></label>
+        <%= number_field_tag 'settings[planner_months]', settings['planner_months'], id: 'settings_planner_months', min: 1, max: 12 %>
+      </div>
+
+      <div class="flow-admin-settings-field">
+        <label for="settings_planner_day_width"><%= l(:label_flow_planner_day_width) %></label>
+        <%= number_field_tag 'settings[planner_day_width]', settings['planner_day_width'], id: 'settings_planner_day_width', min: 20, max: 48 %>
+      </div>
+
+      <div class="flow-admin-settings-field">
+        <label for="settings_planner_default_scale"><%= l(:label_flow_settings_default_scale) %></label>
+        <%= select_tag 'settings[planner_default_scale]',
+                       options_for_select([
+                         [l(:label_flow_scale_day), 'day'],
+                         [l(:label_flow_scale_week), 'week'],
+                         [l(:label_flow_scale_month), 'month'],
+                         [l(:label_flow_scale_quarter), 'quarter']
+                       ], settings['planner_default_scale']),
+                       id: 'settings_planner_default_scale' %>
+      </div>
+    </div>
+  </section>
+
+  <section class="flow-admin-settings-section">
+    <h3 class="flow-admin-settings-title"><%= l(:label_agile_board) %></h3>
+    <p class="flow-admin-settings-subtitle"><%= l(:text_flow_settings_board_hint) %></p>
+
+    <div class="flow-admin-settings-grid">
+      <div class="flow-admin-settings-field">
+        <label for="settings_board_default_sort"><%= l(:label_flow_board_sort) %></label>
+        <%= select_tag 'settings[board_default_sort]',
+                       options_for_select([
+                         [l(:label_flow_sort_priority), 'priority'],
+                         [l(:label_flow_sort_due_date), 'due_date'],
+                         [l(:label_flow_sort_updated_on), 'updated_on'],
+                         [l(:label_flow_sort_done_ratio), 'done_ratio'],
+                         [l(:label_flow_sort_subject), 'subject'],
+                         [l(:label_flow_sort_id), 'id']
+                       ], settings['board_default_sort']),
+                       id: 'settings_board_default_sort' %>
+      </div>
+
+      <div class="flow-admin-settings-field">
+        <label for="settings_board_default_grouping"><%= l(:label_flow_settings_default_grouping) %></label>
+        <%= select_tag 'settings[board_default_grouping]',
+                       options_for_select([
+                         [l(:label_flow_group_none), ''],
+                         [l(:label_flow_group_assignee), 'assignee'],
+                         [l(:label_flow_group_tracker), 'tracker'],
+                         [l(:label_flow_group_priority), 'priority'],
+                         [l(:label_flow_group_version), 'version']
+                       ], settings['board_default_grouping']),
+                       id: 'settings_board_default_grouping' %>
+      </div>
+
+      <div class="flow-admin-settings-field">
+        <label for="settings_board_column_width"><%= l(:label_flow_settings_column_width) %></label>
+        <%= number_field_tag 'settings[board_column_width]', settings['board_column_width'], id: 'settings_board_column_width', min: 260, max: 420 %>
+      </div>
+
+      <div class="flow-admin-settings-field is-wide">
+        <label for="settings_board_wip_limits"><%= l(:label_flow_board_wip_limits) %></label>
+        <%= text_area_tag 'settings[board_wip_limits]',
+                          settings['board_wip_limits'],
+                          id: 'settings_board_wip_limits',
+                          rows: 5,
+                          cols: 60 %>
+        <small><%= l(:text_flow_board_wip_limits_help) %></small>
+      </div>
+
+      <div class="flow-admin-settings-field">
+        <%= hidden_field_tag 'settings[board_quick_create]', '0' %>
+        <label class="flow-admin-settings-check">
+          <%= check_box_tag 'settings[board_quick_create]', '1', settings['board_quick_create'].to_s == '1', id: 'settings_board_quick_create' %>
+          <span><%= l(:label_flow_settings_board_quick_create) %></span>
+        </label>
+      </div>
+
+      <div class="flow-admin-settings-field">
+        <%= hidden_field_tag 'settings[board_inline_edit]', '0' %>
+        <label class="flow-admin-settings-check">
+          <%= check_box_tag 'settings[board_inline_edit]', '1', settings['board_inline_edit'].to_s == '1', id: 'settings_board_inline_edit' %>
+          <span><%= l(:label_flow_settings_board_inline_edit) %></span>
+        </label>
+      </div>
+
+      <div class="flow-admin-settings-field">
+        <%= hidden_field_tag 'settings[board_quick_actions]', '0' %>
+        <label class="flow-admin-settings-check">
+          <%= check_box_tag 'settings[board_quick_actions]', '1', settings['board_quick_actions'].to_s == '1', id: 'settings_board_quick_actions' %>
+          <span><%= l(:label_flow_settings_board_quick_actions) %></span>
+        </label>
+      </div>
+
+      <div class="flow-admin-settings-field">
+        <%= hidden_field_tag 'settings[board_show_hours]', '0' %>
+        <label class="flow-admin-settings-check">
+          <%= check_box_tag 'settings[board_show_hours]', '1', settings['board_show_hours'].to_s == '1', id: 'settings_board_show_hours' %>
+          <span><%= l(:label_flow_settings_board_hours) %></span>
+        </label>
+      </div>
+
+      <div class="flow-admin-settings-field">
+        <%= hidden_field_tag 'settings[board_show_version_badges]', '0' %>
+        <label class="flow-admin-settings-check">
+          <%= check_box_tag 'settings[board_show_version_badges]', '1', settings['board_show_version_badges'].to_s == '1', id: 'settings_board_show_version_badges' %>
+          <span><%= l(:label_flow_settings_board_versions) %></span>
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <section class="flow-admin-settings-section">
+    <h3 class="flow-admin-settings-title"><%= l(:label_planning_gantt) %></h3>
+    <p class="flow-admin-settings-subtitle"><%= l(:text_flow_settings_gantt_hint) %></p>
+
+    <div class="flow-admin-settings-grid">
+      <div class="flow-admin-settings-field">
+        <%= hidden_field_tag 'settings[planner_show_relations]', '0' %>
+        <label class="flow-admin-settings-check">
+          <%= check_box_tag 'settings[planner_show_relations]', '1', settings['planner_show_relations'].to_s == '1', id: 'settings_planner_show_relations' %>
+          <span><%= l(:label_flow_settings_gantt_relations) %></span>
+        </label>
+      </div>
+
+      <div class="flow-admin-settings-field">
+        <%= hidden_field_tag 'settings[planner_show_legend]', '0' %>
+        <label class="flow-admin-settings-check">
+          <%= check_box_tag 'settings[planner_show_legend]', '1', settings['planner_show_legend'].to_s == '1', id: 'settings_planner_show_legend' %>
+          <span><%= l(:label_flow_settings_gantt_legend) %></span>
+        </label>
+      </div>
+
+      <div class="flow-admin-settings-field">
+        <%= hidden_field_tag 'settings[planner_show_unscheduled]', '0' %>
+        <label class="flow-admin-settings-check">
+          <%= check_box_tag 'settings[planner_show_unscheduled]', '1', settings['planner_show_unscheduled'].to_s == '1', id: 'settings_planner_show_unscheduled' %>
+          <span><%= l(:label_flow_settings_gantt_unscheduled) %></span>
+        </label>
+      </div>
+
+      <div class="flow-admin-settings-field">
+        <%= hidden_field_tag 'settings[planner_show_editor]', '0' %>
+        <label class="flow-admin-settings-check">
+          <%= check_box_tag 'settings[planner_show_editor]', '1', settings['planner_show_editor'].to_s == '1', id: 'settings_planner_show_editor' %>
+          <span><%= l(:label_flow_settings_gantt_editor) %></span>
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <section class="flow-admin-settings-section">
+    <h3 class="flow-admin-settings-title"><%= l(:label_flow_settings_checklists) %></h3>
+    <p class="flow-admin-settings-subtitle"><%= l(:text_flow_settings_checklists_hint) %></p>
+
+    <p style="margin-top:12px;">
+      <%= link_to l(:label_flow_checklist_templates), flow_checklist_templates_path, class: 'icon icon-settings' %>
+    </p>
+
+    <div class="flow-admin-settings-grid">
+      <div class="flow-admin-settings-field">
+        <%= hidden_field_tag 'settings[checklist_show_summary]', '0' %>
+        <label class="flow-admin-settings-check">
+          <%= check_box_tag 'settings[checklist_show_summary]', '1', settings['checklist_show_summary'].to_s == '1', id: 'settings_checklist_show_summary' %>
+          <span><%= l(:label_flow_settings_checklist_summary) %></span>
+        </label>
+      </div>
+
+      <div class="flow-admin-settings-field">
+        <%= hidden_field_tag 'settings[checklist_enforce_completion]', '0' %>
+        <label class="flow-admin-settings-check">
+          <%= check_box_tag 'settings[checklist_enforce_completion]', '1', settings['checklist_enforce_completion'].to_s == '1', id: 'settings_checklist_enforce_completion' %>
+          <span><%= l(:label_flow_settings_checklist_enforce_completion) %></span>
+        </label>
+      </div>
+
+      <div class="flow-admin-settings-field">
+        <%= hidden_field_tag 'settings[checklist_auto_apply_templates]', '0' %>
+        <label class="flow-admin-settings-check">
+          <%= check_box_tag 'settings[checklist_auto_apply_templates]', '1', settings['checklist_auto_apply_templates'].to_s == '1', id: 'settings_checklist_auto_apply_templates' %>
+          <span><%= l(:label_flow_settings_checklist_auto_templates) %></span>
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <section class="flow-admin-settings-section">
+    <h3 class="flow-admin-settings-title"><%= l(:label_flow_settings_style) %></h3>
+    <p class="flow-admin-settings-subtitle"><%= l(:text_flow_settings_style_hint) %></p>
+
+    <div class="flow-admin-settings-grid">
+      <div class="flow-admin-settings-field">
+        <label for="settings_ui_density"><%= l(:label_flow_settings_density) %></label>
+        <%= select_tag 'settings[ui_density]',
+                       options_for_select([
+                         [l(:label_flow_settings_density_comfortable), 'comfortable'],
+                         [l(:label_flow_settings_density_compact), 'compact']
+                       ], settings['ui_density']),
+                       id: 'settings_ui_density' %>
+      </div>
+
+      <div class="flow-admin-settings-field">
+        <label for="settings_panel_radius"><%= l(:label_flow_settings_panel_radius) %></label>
+        <%= number_field_tag 'settings[panel_radius]', settings['panel_radius'], id: 'settings_panel_radius', min: 12, max: 28, data: {preview_panel_radius: true} %>
+      </div>
+
+      <div class="flow-admin-settings-field">
+        <label for="settings_card_radius"><%= l(:label_flow_settings_card_radius) %></label>
+        <%= number_field_tag 'settings[card_radius]', settings['card_radius'], id: 'settings_card_radius', min: 10, max: 24, data: {preview_card_radius: true} %>
+      </div>
+
+      <div class="flow-admin-settings-field">
+        <label for="settings_ui_accent_color"><%= l(:label_flow_settings_accent_color) %></label>
+        <%= color_field_tag 'settings[ui_accent_color]', settings['ui_accent_color'], id: 'settings_ui_accent_color', data: {preview_accent: true} %>
+      </div>
+
+      <div class="flow-admin-settings-field">
+        <label for="settings_ui_accent_soft_color"><%= l(:label_flow_settings_accent_soft_color) %></label>
+        <%= color_field_tag 'settings[ui_accent_soft_color]', settings['ui_accent_soft_color'], id: 'settings_ui_accent_soft_color', data: {preview_accent_soft: true} %>
+      </div>
+
+      <div class="flow-admin-settings-field">
+        <label for="settings_gantt_bar_color_start"><%= l(:label_flow_settings_gantt_start_color) %></label>
+        <%= color_field_tag 'settings[gantt_bar_color_start]', settings['gantt_bar_color_start'], id: 'settings_gantt_bar_color_start', data: {preview_gantt_start: true} %>
+      </div>
+
+      <div class="flow-admin-settings-field">
+        <label for="settings_gantt_bar_color_end"><%= l(:label_flow_settings_gantt_end_color) %></label>
+        <%= color_field_tag 'settings[gantt_bar_color_end]', settings['gantt_bar_color_end'], id: 'settings_gantt_bar_color_end', data: {preview_gantt_end: true} %>
+      </div>
+
+      <div class="flow-admin-settings-field">
+        <label for="settings_gantt_closed_bar_color_start"><%= l(:label_flow_settings_gantt_closed_start_color) %></label>
+        <%= color_field_tag 'settings[gantt_closed_bar_color_start]', settings['gantt_closed_bar_color_start'], id: 'settings_gantt_closed_bar_color_start', data: {preview_gantt_closed_start: true} %>
+      </div>
+
+      <div class="flow-admin-settings-field">
+        <label for="settings_gantt_closed_bar_color_end"><%= l(:label_flow_settings_gantt_closed_end_color) %></label>
+        <%= color_field_tag 'settings[gantt_closed_bar_color_end]', settings['gantt_closed_bar_color_end'], id: 'settings_gantt_closed_bar_color_end', data: {preview_gantt_closed_end: true} %>
+      </div>
+
+      <div class="flow-admin-settings-field">
+        <label for="settings_gantt_relation_color"><%= l(:label_flow_settings_gantt_relation_color) %></label>
+        <%= color_field_tag 'settings[gantt_relation_color]', settings['gantt_relation_color'], id: 'settings_gantt_relation_color', data: {preview_relation: true} %>
+      </div>
+
+      <div class="flow-admin-settings-field">
+        <label for="settings_gantt_today_color"><%= l(:label_flow_settings_gantt_today_color) %></label>
+        <%= color_field_tag 'settings[gantt_today_color]', settings['gantt_today_color'], id: 'settings_gantt_today_color' %>
+      </div>
+
+      <div class="flow-admin-settings-field">
+        <label for="settings_gantt_version_marker_color"><%= l(:label_flow_settings_gantt_marker_color) %></label>
+        <%= color_field_tag 'settings[gantt_version_marker_color]', settings['gantt_version_marker_color'], id: 'settings_gantt_version_marker_color', data: {preview_marker: true} %>
+      </div>
+
+      <div class="flow-admin-settings-field">
+        <label for="settings_weekend_tint_color"><%= l(:label_flow_settings_weekend_tint_color) %></label>
+        <%= color_field_tag 'settings[weekend_tint_color]', settings['weekend_tint_color'], id: 'settings_weekend_tint_color' %>
+      </div>
+    </div>
+  </section>
+
+  <section class="flow-admin-settings-preview">
+    <h3 class="flow-admin-settings-title"><%= l(:label_flow_settings_preview) %></h3>
+    <p class="flow-admin-settings-subtitle"><%= l(:text_flow_settings_preview_hint) %></p>
+
+    <div class="flow-admin-settings-preview-grid"
+         data-flow-preview="true"
+         style="
+           --preview-accent: <%= settings['ui_accent_color'] %>;
+           --preview-accent-soft: <%= settings['ui_accent_soft_color'] %>;
+           --preview-panel-radius: <%= settings['panel_radius'] %>px;
+           --preview-card-radius: <%= settings['card_radius'] %>px;
+           --preview-gantt-start: <%= settings['gantt_bar_color_start'] %>;
+           --preview-gantt-end: <%= settings['gantt_bar_color_end'] %>;
+           --preview-gantt-closed-start: <%= settings['gantt_closed_bar_color_start'] %>;
+           --preview-gantt-closed-end: <%= settings['gantt_closed_bar_color_end'] %>;
+           --preview-relation: <%= settings['gantt_relation_color'] %>;
+           --preview-marker: <%= settings['gantt_version_marker_color'] %>;
+         ">
+      <div class="flow-admin-preview-board">
+        <h4><%= l(:label_agile_board) %></h4>
+        <div class="flow-admin-preview-column">
+          <div class="flow-admin-preview-card">
+            <strong>#42 Livraison sprint</strong>
+            <span><%= l(:label_tracker) %> : Evolution</span>
+            <span><%= l(:label_flow_unassigned) %> | 60%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-admin-preview-gantt">
+        <h4><%= l(:label_planning_gantt) %></h4>
+        <div class="flow-admin-preview-bar-wrap">
+          <div class="flow-admin-preview-bar">60%</div>
+          <div class="flow-admin-preview-bar is-closed">100%</div>
+          <div class="flow-admin-preview-meta">
+            <span class="flow-admin-preview-marker"></span>
+            <span class="flow-admin-preview-relation"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+  (function() {
+    var root = document.querySelector("[data-flow-admin-settings='true']");
+    if (!root) { return; }
+
+    var preview = root.querySelector("[data-flow-preview='true']");
+    if (!preview) { return; }
+
+    function bindColor(selector, variable) {
+      var input = root.querySelector(selector);
+      if (!input) { return; }
+      var update = function() { preview.style.setProperty(variable, input.value); };
+      input.addEventListener("input", update);
+      update();
+    }
+
+    function bindNumber(selector, variable, suffix) {
+      var input = root.querySelector(selector);
+      if (!input) { return; }
+      var update = function() { preview.style.setProperty(variable, String(input.value || "") + (suffix || "")); };
+      input.addEventListener("input", update);
+      update();
+    }
+
+    bindColor("#settings_ui_accent_color", "--preview-accent");
+    bindColor("#settings_ui_accent_soft_color", "--preview-accent-soft");
+    bindColor("#settings_gantt_bar_color_start", "--preview-gantt-start");
+    bindColor("#settings_gantt_bar_color_end", "--preview-gantt-end");
+    bindColor("#settings_gantt_closed_bar_color_start", "--preview-gantt-closed-start");
+    bindColor("#settings_gantt_closed_bar_color_end", "--preview-gantt-closed-end");
+    bindColor("#settings_gantt_relation_color", "--preview-relation");
+    bindColor("#settings_gantt_version_marker_color", "--preview-marker");
+    bindNumber("#settings_panel_radius", "--preview-panel-radius", "px");
+    bindNumber("#settings_card_radius", "--preview-card-radius", "px");
+  })();
+</script>

@@ -2,6 +2,8 @@ fr:
   project_module_flow_planner: Flow Planner
   label_agile_board: Tableau agile
   label_planning_gantt: Gantt interactif
+  label_flow_global_agile_board: Tableau agile global
+  label_flow_global_planning_gantt: Gantt global
   label_flow_unscheduled_issues: Tickets sans dates
   label_flow_board_limit: Limite de tickets du tableau agile
   label_flow_board_sort: Tri du tableau agile
@@ -39,6 +41,41 @@ fr:
   label_flow_issue_bar: Barre de ticket
   label_flow_version_marker: Repere de version
   label_flow_dependency_line: Liaison
+  label_flow_settings_title: Configuration avancee de Flow Planner
+  label_flow_settings_operations: Pilotage et perimetre
+  label_flow_settings_style: Apparence et confort visuel
+  label_flow_settings_default_scale: Echelle par defaut du gantt
+  label_flow_settings_default_grouping: Regroupement par defaut du board
+  label_flow_settings_column_width: Largeur des colonnes agile
+  label_flow_settings_board_quick_create: Autoriser l'ajout rapide depuis une colonne
+  label_flow_settings_board_inline_edit: Autoriser la modification rapide par double-clic
+  label_flow_settings_board_quick_actions: Afficher les actions rapides sur les cartes
+  label_flow_settings_board_hours: Afficher les heures estimees et passees sur les cartes
+  label_flow_settings_board_versions: Afficher les badges de version sur les cartes
+  label_flow_settings_gantt_relations: Afficher les dependances par defaut
+  label_flow_settings_gantt_legend: Afficher la legende sous le gantt
+  label_flow_settings_gantt_unscheduled: Afficher le panneau des tickets sans dates
+  label_flow_settings_gantt_editor: Afficher l'editeur rapide de ticket
+  label_flow_settings_checklists: Checklists
+  label_flow_settings_checklist_summary: Afficher le resume checklist sur les cartes et lignes du planning
+  label_flow_settings_checklist_enforce_completion: Bloquer la fermeture d'un ticket si des points obligatoires restent ouverts
+  label_flow_settings_checklist_auto_templates: Appliquer automatiquement les templates de checklist a la creation des tickets
+  label_flow_settings_density: Densite d'affichage
+  label_flow_settings_density_comfortable: Confort
+  label_flow_settings_density_compact: Compact
+  label_flow_settings_panel_radius: Rayon des panneaux
+  label_flow_settings_card_radius: Rayon des cartes
+  label_flow_settings_accent_color: Couleur d'accent principale
+  label_flow_settings_accent_soft_color: Couleur d'accent secondaire
+  label_flow_settings_gantt_start_color: Couleur de debut des barres gantt
+  label_flow_settings_gantt_end_color: Couleur de fin des barres gantt
+  label_flow_settings_gantt_closed_start_color: Couleur de debut des tickets fermes
+  label_flow_settings_gantt_closed_end_color: Couleur de fin des tickets fermes
+  label_flow_settings_gantt_relation_color: Couleur des dependances standard
+  label_flow_settings_gantt_today_color: Couleur du repere Aujourd'hui
+  label_flow_settings_gantt_marker_color: Couleur des reperes de version
+  label_flow_settings_weekend_tint_color: Teinte des week-ends
+  label_flow_settings_preview: Apercu rapide
   label_flow_quick_guide: Guide rapide
   label_flow_show_dependencies: Afficher les dependances
   label_flow_show_baselines: Afficher la baseline de session
@@ -69,10 +106,43 @@ fr:
   label_flow_export_csv: Export CSV
   label_flow_edit_selected_issue: Editer le ticket selectionne
   label_flow_plan_issue: Planification rapide
+  label_flow_checklist: Checklist
+  label_flow_checklist_templates: Templates de checklist
+  label_flow_checklist_template_new: Nouveau template
+  label_flow_checklist_template_edit: Modifier le template
+  label_flow_checklist_template_library: Bibliotheque des templates
+  label_flow_checklist_template_items: Points du template
+  label_flow_checklist_select_template: Choisir un template
+  label_flow_all_projects: Tous les projets
+  label_flow_template_active: Template actif
+  label_flow_template_inactive: Inactif
+  label_flow_checklist_blocked: Bloque par checklist
+  label_flow_checklist_complete: Checklist complete
+  label_flow_checklist_done: Faits
+  label_flow_checklist_remaining: Restants
+  label_flow_checklist_required: Obligatoires
+  label_flow_checklist_mandatory: Obligatoire
+  label_flow_checklist_empty: Sans checklist
+  label_flow_dashboard: Dashboard
+  label_flow_home_projects: Projets visibles
+  label_flow_home_open_issues: Tickets ouverts
+  label_flow_home_assigned_issues: Tickets assignes
+  label_flow_home_overdue_issues: Tickets en retard
+  label_flow_home_scheduled_issues: Tickets planifies
+  label_flow_home_priority: Priorites du moment
+  label_flow_home_global_tools: Pilotage global
+  label_flow_home_active_projects: Projets actifs
+  label_flow_home_recent_activity: Dernieres mises a jour
+  label_flow_home_open_board: Ouvrir le board
+  label_flow_home_open_planning: Ouvrir le planning
+  label_flow_checklist_progress_compact: "Checklist %{completed}/%{total}"
+  label_flow_checklist_required_compact: "Obligatoires %{completed}/%{total}"
   permission_view_agile_board: Voir le tableau agile
   permission_manage_agile_board: Deplacer et modifier rapidement les cartes du tableau agile
   permission_view_planning_gantt: Voir le gantt interactif
   permission_manage_planning_gantt: Replanifier les tickets dans le gantt interactif
+  permission_view_flow_checklists: Voir les checklists des tickets
+  permission_manage_flow_checklists: Gerer les checklists des tickets
   button_flow_assign_me: M'assigner
   button_flow_mark_done: Marquer 100%
   button_flow_undo: Annuler le dernier deplacement
@@ -83,12 +153,16 @@ fr:
   button_flow_add_issue: Ajouter un ticket
   button_flow_fullscreen: Plein ecran
   button_flow_plan_issue: Planifier
+  button_flow_checklist_add_item: Ajouter un point
+  button_flow_apply_template: Appliquer le template
   button_flow_collapse_all: Tout replier
   button_flow_expand_all: Tout deplier
   text_agile_board_summary: "%{count} tickets charges depuis la requete courante."
+  text_flow_global_agile_board_summary: "%{count} tickets charges sur %{projects} projets visibles."
   text_agile_board_truncated: "%{count} tickets sont affiches sur le tableau sur %{total}. Augmentez la limite dans la configuration du plugin si necessaire."
   text_agile_board_empty: "Aucun ticket ne correspond a la requete courante."
   text_planning_gantt_summary: "%{count} tickets planifies sont visibles dans la fenetre courante (%{total} tickets dans la requete)."
+  text_flow_global_planning_gantt_summary: "%{count} tickets planifies visibles sur %{projects} projets charges (%{total} tickets disponibles dans la vue)."
   text_planning_gantt_truncated: "%{count} tickets sont affiches dans le planning sur %{total}. Augmentez la limite dans la configuration du plugin si necessaire."
   text_planning_gantt_outside_window: "%{count} tickets planifies sont en dehors de la fenetre visible."
   text_planning_gantt_empty: "Aucun ticket planifie n'est visible dans la fenetre courante."
@@ -126,3 +200,62 @@ fr:
   text_flow_due_today: "Aujourd'hui"
   text_flow_due_tomorrow: "Demain"
   text_flow_due_soon: "Dans %{count} jours"
+  text_flow_settings_intro: "Reglez ici le comportement fonctionnel du plugin et l'apparence des ecrans Agile et Gantt sans toucher au code."
+  text_flow_settings_operations_hint: "Ces reglages influencent le volume charge, la lecture par defaut et les comportements utiles a la gestion projet."
+  text_flow_settings_board_hint: "Adaptez le board au niveau de detail attendu par ton equipe et a votre facon de piloter les statuts."
+  text_flow_settings_gantt_hint: "Controle ce qui est visible par defaut dans le planning interactif et les outils proposes aux chefs de projet."
+  text_flow_settings_checklists_hint: "Ces reglages pilotent le resume checklist dans les vues de pilotage et le blocage optionnel a la fermeture."
+  text_flow_checklist_templates_summary: "%{count} templates disponibles pour precharger des checklists coherentes."
+  text_flow_checklist_template_help: "Definis une bibliotheque reutilisable de points de checklist. Une ligne = un point. Prefixe une ligne par ! ou [required] pour la rendre obligatoire."
+  text_flow_checklist_template_items_help: "Un point par ligne. Prefixe une ligne par ! si le point est obligatoire."
+  text_flow_checklist_template_library_hint: "Les templates peuvent etre globaux ou cibles par projet et/ou tracker. Les plus specifiques s'appliquent en meme temps sans dupliquer les points existants."
+  text_flow_checklist_template_more_items: "+ %{count} point(s) supplementaire(s)"
+  text_flow_checklist_templates_empty: "Aucun template de checklist n'est encore defini."
+  text_flow_checklist_templates_migration_required: "La table des templates de checklist n'existe pas encore. Lance la migration du plugin puis recharge la page."
+  text_flow_checklist_template_delete_confirm: "Supprimer le template '%{name}' ?"
+  text_flow_home_headline: "Une entree plus utile pour piloter l'instance"
+  text_flow_home_summary: "%{projects} projets visibles, %{issues} tickets ouverts et des acces directs aux vues de pilotage globales."
+  text_flow_home_priority_hint: "Ce qui merite un coup d'oeil immediat, avec priorite aux tickets assignes et dates proches."
+  text_flow_home_global_tools_hint: "Les vues consolidees du plugin pour garder la main sur l'ensemble de l'instance."
+  text_flow_home_active_projects_hint: "Les projets recemment touches, avec leur volume de tickets encore ouverts."
+  text_flow_home_recent_activity_hint: "Les derniers tickets modifies pour reprendre le contexte rapidement."
+  text_flow_home_shortcut_my_page: "Retrouver tes blocs personnels et raccourcis."
+  text_flow_home_shortcut_projects: "Parcourir les espaces actifs sans passer par les menus."
+  text_flow_home_shortcut_issues: "Acceder a la liste complete des tickets visibles."
+  text_flow_home_shortcut_activity: "Lire les changements recents de l'instance."
+  text_flow_home_shortcut_global_agile: "Piloter les tickets de tous les projets en mode board."
+  text_flow_home_shortcut_global_gantt: "Visualiser le planning consolide sur tous les projets."
+  text_flow_home_shortcut_templates: "Gerer la bibliotheque de templates checklist."
+  text_flow_home_shortcut_admin: "Ouvrir les reglages globaux de Redmine."
+  text_flow_home_templates_ready: "%{count} template(s) checklist actif(s) pour precharger les tickets."
+  text_flow_home_templates_pending: "Les templates checklist ne sont pas encore disponibles sur cette instance."
+  text_flow_home_project_open_issues: "%{count} ticket(s) ouverts"
+  text_flow_home_no_priority: "Aucun ticket prioritaire visible pour le moment."
+  text_flow_home_no_projects: "Aucun projet visible."
+  text_flow_home_no_recent: "Aucune mise a jour recente visible."
+  text_flow_settings_style_hint: "Ces reglages modifient le rendu des pages du plugin, notamment les couleurs du gantt et la densite visuelle."
+  text_flow_settings_preview_hint: "L'apercu aide a verifier rapidement les couleurs et les arrondis avant d'enregistrer."
+  text_flow_setting_board_limit_help: "Plus la limite est haute, plus le tableau peut devenir lourd sur les gros projets."
+  text_flow_setting_planner_limit_help: "Augmentez cette valeur si le planning doit couvrir beaucoup de tickets planifies."
+  text_flow_checklist_summary: "%{completed}/%{total} point(s) termines, %{pending} restant(s)."
+  text_flow_checklist_empty: "Aucun point de checklist pour ce ticket."
+  text_flow_checklist_subject_required: "Le texte du point est obligatoire."
+  text_flow_checklist_template_required: "Choisissez un template de checklist."
+  text_flow_checklist_templates_unavailable: "Aucun template n'est disponible."
+  text_flow_checklist_template_not_found: "Le template selectionne est introuvable."
+  text_flow_checklist_template_applied: "Template '%{template}' applique : %{count} point(s) ajoute(s)."
+  text_flow_checklist_template_applied_nothing: "Le template '%{template}' n'a ajoute aucun nouveau point."
+  text_flow_checklist_new_item_placeholder: "Ajouter une etape d'execution, de verification ou de recette"
+  text_flow_checklist_delete_confirm: "Supprimer ce point de checklist ?"
+  text_flow_checklist_drag_hint: "Glissez pour reordonner la checklist"
+  text_flow_checklist_done_by: "Fait par %{user} le %{time}"
+  text_flow_checklist_invalid_reorder: "Le nouvel ordre de checklist est invalide."
+  text_flow_checklist_journal_item_added: "Checklist: ajout de '%{subject}'"
+  text_flow_checklist_journal_item_removed: "Checklist: suppression de '%{subject}'"
+  text_flow_checklist_journal_item_done: "Checklist: '%{subject}' coche"
+  text_flow_checklist_journal_item_reopened: "Checklist: '%{subject}' reouvert"
+  text_flow_checklist_journal_item_renamed: "Checklist: '%{before}' renomme en '%{after}'"
+  text_flow_checklist_journal_item_updated: "Checklist: mise a jour de '%{subject}'"
+  text_flow_checklist_journal_reordered: "Checklist: ordre reorganise"
+  text_flow_checklist_journal_template_applied: "Checklist: template '%{template}' applique (%{count} point(s) ajoutes)"
+  error_flow_checklist_incomplete_required: "La checklist contient encore des points obligatoires non termines."

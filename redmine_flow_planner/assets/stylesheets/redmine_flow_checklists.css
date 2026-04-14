@@ -1,0 +1,315 @@
+.flow-checklist-panel {
+  margin-top: 20px;
+  padding: 16px 18px;
+  border: 1px solid #d7dee8;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+}
+
+.flow-checklist-panel.is-loading {
+  opacity: 0.65;
+  pointer-events: none;
+}
+
+.flow-checklist-panel [hidden],
+.flow-checklist-panel .is-hidden {
+  display: none !important;
+}
+
+.flow-checklist-header,
+.flow-checklist-item-main,
+.flow-checklist-compose-grid,
+.flow-checklist-compose-actions,
+.flow-checklist-stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.flow-checklist-header {
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.flow-checklist-header h3 {
+  margin: 0;
+  color: #1f2937;
+}
+
+.flow-checklist-subtitle {
+  margin: 4px 0 0;
+  color: #667085;
+  font-size: 0.95rem;
+}
+
+.flow-checklist-header-side {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.flow-checklist-template-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 6px 8px;
+  border: 1px solid #e6edf6;
+  border-radius: 12px;
+  background: #fafcff;
+}
+
+.flow-checklist-template-select {
+  min-width: 260px;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.flow-checklist-chip,
+.flow-checklist-badge,
+.flow-checklist-stat {
+  border: 1px solid #d8e3ef;
+  border-radius: 999px;
+  background: #f8fbff;
+  color: #36506a;
+}
+
+.flow-checklist-chip,
+.flow-checklist-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 9px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.flow-checklist-chip.is-alert,
+.flow-checklist-badge.is-required {
+  border-color: #f3c2bf;
+  background: #fff3f1;
+  color: #b42318;
+}
+
+.flow-checklist-chip.is-success {
+  border-color: #b7dfc6;
+  background: #effcf3;
+  color: #137333;
+}
+
+.flow-checklist-progress {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.flow-checklist-progress-track {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e8eef6;
+}
+
+.flow-checklist-progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(135deg, #155eef 0%, #0f5f9c 100%);
+}
+
+.flow-checklist-progress-value {
+  font-weight: 700;
+  color: #0f5f9c;
+}
+
+.flow-checklist-stats {
+  flex-wrap: wrap;
+  margin-top: 12px;
+  gap: 10px;
+}
+
+.flow-checklist-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 11px;
+}
+
+.flow-checklist-stat strong {
+  color: #1f2937;
+}
+
+.flow-checklist-flash {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-weight: 700;
+}
+
+.flow-checklist-flash.is-success {
+  background: #edf8f1;
+  color: #106c2f;
+}
+
+.flow-checklist-flash.is-error {
+  background: #fff1f1;
+  color: #b42318;
+}
+
+.flow-checklist-list {
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.flow-checklist-item {
+  display: grid;
+  gap: 10px;
+  padding: 10px 0;
+  border-top: 1px solid #e7edf5;
+}
+
+.flow-checklist-item:first-child {
+  border-top: 0;
+}
+
+.flow-checklist-item.is-done .flow-checklist-item-subject {
+  color: #667085;
+  text-decoration: line-through;
+}
+
+.flow-checklist-item.is-drop-target {
+  border-top-color: #0f5f9c;
+}
+
+.flow-checklist-item.is-dragging {
+  opacity: 0.45;
+}
+
+.flow-checklist-drag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  width: 18px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #8ba0b6;
+  cursor: grab;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.flow-checklist-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.flow-checklist-toggle input[type="checkbox"] {
+  margin: 0;
+  align-self: center;
+}
+
+.flow-checklist-item-subject {
+  overflow-wrap: anywhere;
+  color: #1f2937;
+  font-weight: 600;
+}
+
+.flow-checklist-item-side {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.flow-checklist-item-side .icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  padding: 0;
+  line-height: 1;
+  text-align: center;
+  background-position: center center !important;
+  background-repeat: no-repeat;
+}
+
+.flow-checklist-item-meta {
+  color: #667085;
+  font-size: 0.82rem;
+}
+
+.flow-checklist-compose,
+.flow-checklist-edit {
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid #dce6f1;
+  border-radius: 14px;
+  background: #fafcff;
+}
+
+.flow-checklist-input {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid #c9d5e4;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.flow-checklist-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid #d8e3ef;
+  border-radius: 12px;
+  background: #ffffff;
+  white-space: nowrap;
+}
+
+.flow-checklist-empty {
+  margin: 16px 0 0;
+}
+
+@media screen and (max-width: 899px) {
+  .flow-checklist-header,
+  .flow-checklist-item-main,
+  .flow-checklist-compose-grid,
+  .flow-checklist-compose-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .flow-checklist-template-picker {
+    width: 100%;
+  }
+
+  .flow-checklist-template-select {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .flow-checklist-item-side {
+    justify-content: flex-start;
+  }
+}

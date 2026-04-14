@@ -1,0 +1,228 @@
+<section class="flow-home-dashboard">
+  <div class="flow-home-hero">
+    <div class="flow-home-hero-copy">
+      <p class="flow-home-kicker"><%= l(:label_flow_dashboard) %></p>
+      <h3><%= l(:text_flow_home_headline) %></h3>
+      <p class="flow-home-hero-text">
+        <%= l(:text_flow_home_summary, projects: metrics[:projects], issues: metrics[:open_issues]) %>
+      </p>
+    </div>
+
+    <div class="flow-home-shortcuts">
+      <% if user_logged %>
+        <%= link_to({controller: 'my', action: 'page'}, class: 'flow-home-shortcut') do %>
+          <strong><%= l(:label_my_page) %></strong>
+          <span><%= l(:text_flow_home_shortcut_my_page) %></span>
+        <% end %>
+      <% end %>
+
+      <%= link_to projects_path, class: 'flow-home-shortcut' do %>
+        <strong><%= l(:label_project_plural) %></strong>
+        <span><%= l(:text_flow_home_shortcut_projects) %></span>
+      <% end %>
+
+      <%= link_to issues_path, class: 'flow-home-shortcut' do %>
+        <strong><%= l(:label_issue_plural) %></strong>
+        <span><%= l(:text_flow_home_shortcut_issues) %></span>
+      <% end %>
+
+      <%= link_to({controller: 'activities', action: 'index'}, class: 'flow-home-shortcut') do %>
+        <strong><%= l(:label_activity) %></strong>
+        <span><%= l(:text_flow_home_shortcut_activity) %></span>
+      <% end %>
+
+      <%= link_to global_agile_board_path, class: 'flow-home-shortcut is-accent' do %>
+        <strong><%= l(:label_flow_global_agile_board) %></strong>
+        <span><%= l(:text_flow_home_shortcut_global_agile) %></span>
+      <% end %>
+
+      <%= link_to global_planning_gantt_path, class: 'flow-home-shortcut is-accent' do %>
+        <strong><%= l(:label_flow_global_planning_gantt) %></strong>
+        <span><%= l(:text_flow_home_shortcut_global_gantt) %></span>
+      <% end %>
+
+      <% if admin_mode %>
+        <%= link_to flow_checklist_templates_path, class: 'flow-home-shortcut' do %>
+          <strong><%= l(:label_flow_checklist_templates) %></strong>
+          <span><%= l(:text_flow_home_shortcut_templates) %></span>
+        <% end %>
+
+        <%= link_to({controller: 'admin', action: 'index'}, class: 'flow-home-shortcut') do %>
+          <strong><%= l(:label_administration) %></strong>
+          <span><%= l(:text_flow_home_shortcut_admin) %></span>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="flow-home-metrics">
+    <article class="flow-home-metric">
+      <span><%= l(:label_flow_home_projects) %></span>
+      <strong><%= metrics[:projects] %></strong>
+    </article>
+    <article class="flow-home-metric">
+      <span><%= l(:label_flow_home_open_issues) %></span>
+      <strong><%= metrics[:open_issues] %></strong>
+    </article>
+    <article class="flow-home-metric">
+      <span><%= l(:label_flow_home_assigned_issues) %></span>
+      <strong><%= metrics[:assigned] %></strong>
+    </article>
+    <article class="flow-home-metric">
+      <span><%= l(:label_flow_home_overdue_issues) %></span>
+      <strong><%= metrics[:overdue] %></strong>
+    </article>
+    <article class="flow-home-metric">
+      <span><%= l(:label_flow_home_scheduled_issues) %></span>
+      <strong><%= metrics[:scheduled] %></strong>
+    </article>
+  </div>
+
+  <div class="flow-home-grid">
+    <section class="flow-home-panel flow-home-panel--wide">
+      <div class="flow-home-panel-header">
+        <div>
+          <h3><%= l(:label_flow_home_priority) %></h3>
+          <p><%= l(:text_flow_home_priority_hint) %></p>
+        </div>
+        <%= link_to l(:label_issue_plural), issues_path, class: 'flow-home-panel-link' %>
+      </div>
+
+      <% if priority_issues.any? %>
+        <div class="flow-home-issue-list">
+          <% priority_issues.each do |issue| %>
+            <article class="flow-home-issue-row">
+              <div class="flow-home-issue-main">
+                <div class="flow-home-issue-title">
+                  <%= link_to "##{issue.id} #{issue.subject}", issue_path(issue) %>
+                </div>
+                <div class="flow-home-issue-meta">
+                  <span><%= issue.project.name %></span>
+                  <span><%= issue.tracker.name %></span>
+                  <span><%= issue.status.name %></span>
+                  <% if issue.assigned_to.present? %>
+                    <span><%= issue.assigned_to.name %></span>
+                  <% end %>
+                </div>
+              </div>
+              <div class="flow-home-issue-side">
+                <% if issue.due_date.present? %>
+                  <% if issue.overdue? %>
+                    <span class="flow-home-pill is-danger"><%= l(:label_flow_overdue) %></span>
+                  <% elsif issue.due_date == User.current.today %>
+                    <span class="flow-home-pill is-warning"><%= l(:text_flow_due_today) %></span>
+                  <% else %>
+                    <span class="flow-home-pill"><%= format_date(issue.due_date) %></span>
+                  <% end %>
+                <% else %>
+                  <span class="flow-home-pill is-muted"><%= l(:label_flow_unscheduled) %></span>
+                <% end %>
+              </div>
+            </article>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="flow-home-empty"><%= l(:text_flow_home_no_priority) %></p>
+      <% end %>
+    </section>
+
+    <section class="flow-home-panel">
+      <div class="flow-home-panel-header">
+        <div>
+          <h3><%= l(:label_flow_home_global_tools) %></h3>
+          <p><%= l(:text_flow_home_global_tools_hint) %></p>
+        </div>
+      </div>
+
+      <div class="flow-home-stack">
+        <article class="flow-home-mini-card">
+          <strong><%= l(:label_flow_global_agile_board) %></strong>
+          <p><%= l(:text_flow_home_shortcut_global_agile) %></p>
+          <%= link_to l(:label_flow_home_open_board), global_agile_board_path, class: 'flow-home-panel-link' %>
+        </article>
+
+        <article class="flow-home-mini-card">
+          <strong><%= l(:label_flow_global_planning_gantt) %></strong>
+          <p><%= l(:text_flow_home_shortcut_global_gantt) %></p>
+          <%= link_to l(:label_flow_home_open_planning), global_planning_gantt_path, class: 'flow-home-panel-link' %>
+        </article>
+
+        <article class="flow-home-mini-card">
+          <strong><%= l(:label_flow_checklist_templates) %></strong>
+          <% if templates_table_available %>
+            <p><%= l(:text_flow_home_templates_ready, count: templates_count || 0) %></p>
+            <% if admin_mode %>
+              <%= link_to l(:label_flow_checklist_template_library), flow_checklist_templates_path, class: 'flow-home-panel-link' %>
+            <% end %>
+          <% else %>
+            <p><%= l(:text_flow_home_templates_pending) %></p>
+          <% end %>
+        </article>
+      </div>
+    </section>
+
+    <section class="flow-home-panel flow-home-panel--wide">
+      <div class="flow-home-panel-header">
+        <div>
+          <h3><%= l(:label_flow_home_active_projects) %></h3>
+          <p><%= l(:text_flow_home_active_projects_hint) %></p>
+        </div>
+        <%= link_to l(:label_project_plural), projects_path, class: 'flow-home-panel-link' %>
+      </div>
+
+      <% if projects.any? %>
+        <div class="flow-home-project-grid">
+          <% projects.each do |project_data| %>
+            <% project = project_data[:record] %>
+            <article class="flow-home-project-card" style="<%= project_data[:style] %>">
+              <div class="flow-home-project-top">
+                <strong><%= link_to project.name, project_path(project) %></strong>
+                <span class="flow-home-project-count"><%= l(:text_flow_home_project_open_issues, count: project_data[:open_count]) %></span>
+              </div>
+              <p class="flow-home-project-meta">
+                <%= project.identifier.presence || project.name.parameterize %>
+                <% if project.updated_on.present? %>
+                  <span><%= format_time(project.updated_on) %></span>
+                <% end %>
+              </p>
+              <div class="flow-home-project-actions">
+                <%= link_to l(:label_overview), project_path(project), class: 'flow-home-inline-link' %>
+                <%= link_to l(:label_issue_plural), project_issues_path(project), class: 'flow-home-inline-link' %>
+              </div>
+            </article>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="flow-home-empty"><%= l(:text_flow_home_no_projects) %></p>
+      <% end %>
+    </section>
+
+    <section class="flow-home-panel">
+      <div class="flow-home-panel-header">
+        <div>
+          <h3><%= l(:label_flow_home_recent_activity) %></h3>
+          <p><%= l(:text_flow_home_recent_activity_hint) %></p>
+        </div>
+      </div>
+
+      <% if recent_issues.any? %>
+        <div class="flow-home-activity-list">
+          <% recent_issues.each do |issue| %>
+            <article class="flow-home-activity-row">
+              <div class="flow-home-activity-title">
+                <%= link_to "##{issue.id} #{issue.subject}", issue_path(issue) %>
+              </div>
+              <div class="flow-home-activity-meta">
+                <span><%= issue.project.name %></span>
+                <span><%= issue.status.name %></span>
+                <span><%= format_time(issue.updated_on) %></span>
+              </div>
+            </article>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="flow-home-empty"><%= l(:text_flow_home_no_recent) %></p>
+      <% end %>
+    </section>
+  </div>
+</section>

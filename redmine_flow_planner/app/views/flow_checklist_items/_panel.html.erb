@@ -1,0 +1,110 @@
+<% if issue.present? %>
+<% can_manage_checklist = local_assigns.fetch(:can_manage_checklist) do
+     User.current.admin? || User.current.allowed_to?(:manage_flow_checklists, issue.project)
+   end %>
+<% items = Array(local_assigns[:items]) %>
+<% templates = Array(local_assigns[:templates]) %>
+<% stats = local_assigns[:stats] || {total: 0, completed: 0, pending: 0, percent: 0, required_total: 0, required_completed: 0, blocked: false} %>
+
+<section class="flow-checklist-panel"
+         data-flow-checklist="true"
+         data-create-url="<%= issue_flow_checklist_items_path(issue) %>"
+         data-apply-template-url="<%= apply_template_issue_flow_checklist_items_path(issue) %>"
+         data-reorder-url="<%= reorder_issue_flow_checklist_items_path(issue) %>"
+         data-saved-message="<%= l(:notice_successful_update) %>"
+         data-error-message="<%= l(:text_flow_network_error) %>"
+         data-failure-message="<%= l(:text_flow_save_failed) %>"
+         data-subject-required-message="<%= l(:text_flow_checklist_subject_required) %>"
+         data-template-required-message="<%= l(:text_flow_checklist_template_required) %>"
+         data-delete-confirm-message="<%= l(:text_flow_checklist_delete_confirm) %>">
+  <div class="flow-checklist-header">
+    <div>
+      <h3><%= l(:label_flow_checklist) %></h3>
+      <p class="flow-checklist-subtitle">
+        <%= l(:text_flow_checklist_summary, completed: stats[:completed], total: stats[:total], pending: stats[:pending]) %>
+      </p>
+    </div>
+
+    <div class="flow-checklist-header-side">
+      <% if can_manage_checklist && templates.any? %>
+        <form class="flow-checklist-template-picker" data-flow-checklist-template-form="true">
+          <%= select_tag :template_id,
+                         options_for_select([[l(:label_flow_checklist_select_template), '']] + templates.map {|template| ["#{template.name} (#{template.display_scope})", template.id]}),
+                         class: 'flow-checklist-template-select',
+                         data: {flow_checklist_template_select: true} %>
+          <button type="submit" class="button-small"><%= l(:button_flow_apply_template) %></button>
+        </form>
+      <% end %>
+
+      <% if stats[:blocked] %>
+        <span class="flow-checklist-chip is-alert"><%= l(:label_flow_checklist_blocked) %></span>
+      <% elsif stats[:total].positive? && stats[:completed] == stats[:total] %>
+        <span class="flow-checklist-chip is-success"><%= l(:label_flow_checklist_complete) %></span>
+      <% end %>
+
+      <% if can_manage_checklist %>
+        <button type="button"
+                class="button-small"
+                data-flow-checklist-add-toggle="true">
+          <%= l(:button_flow_checklist_add_item) %>
+        </button>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="flow-checklist-progress" aria-hidden="true">
+    <span class="flow-checklist-progress-track">
+      <span class="flow-checklist-progress-fill" style="width: <%= stats[:percent] %>%"></span>
+    </span>
+    <span class="flow-checklist-progress-value"><%= stats[:percent] %>%</span>
+  </div>
+
+  <div class="flow-checklist-stats">
+    <span class="flow-checklist-stat">
+      <strong><%= stats[:completed] %>/<%= stats[:total] %></strong>
+      <span><%= l(:label_flow_checklist_done) %></span>
+    </span>
+    <span class="flow-checklist-stat">
+      <strong><%= stats[:pending] %></strong>
+      <span><%= l(:label_flow_checklist_remaining) %></span>
+    </span>
+    <% if stats[:required_total].positive? %>
+      <span class="flow-checklist-stat">
+        <strong><%= stats[:required_completed] %>/<%= stats[:required_total] %></strong>
+        <span><%= l(:label_flow_checklist_required) %></span>
+      </span>
+    <% end %>
+  </div>
+
+  <div class="flow-checklist-flash" data-flow-checklist-message="true" hidden></div>
+
+  <ul class="flow-checklist-list" data-flow-checklist-list="true">
+    <% items.each do |item| %>
+      <%= render partial: 'flow_checklist_items/item', locals: {issue: issue, item: item, can_manage_checklist: can_manage_checklist} %>
+    <% end %>
+  </ul>
+
+  <p class="nodata flow-checklist-empty <%= 'is-hidden' unless items.empty? %>"
+     data-flow-checklist-empty="true"><%= l(:text_flow_checklist_empty) %></p>
+
+  <% if can_manage_checklist %>
+    <form class="flow-checklist-compose is-hidden" data-flow-checklist-form="true" novalidate>
+      <div class="flow-checklist-compose-grid">
+        <input type="text"
+               name="item[subject]"
+               class="flow-checklist-input"
+               placeholder="<%= l(:text_flow_checklist_new_item_placeholder) %>"
+               required>
+        <label class="flow-checklist-flag">
+          <input type="checkbox" name="item[mandatory]" value="1">
+          <span><%= l(:label_flow_checklist_mandatory) %></span>
+        </label>
+      </div>
+      <div class="flow-checklist-compose-actions">
+        <button type="submit" class="button-small"><%= l(:button_add) %></button>
+        <button type="button" class="button-small" data-flow-checklist-add-cancel="true"><%= l(:button_cancel) %></button>
+      </div>
+    </form>
+  <% end %>
+</section>
+<% end %>
